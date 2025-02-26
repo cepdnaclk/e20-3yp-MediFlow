@@ -1,0 +1,65 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "email": "doctor@gmail.com",
+      "password": "123",
+      "role": "doctor"
+    },
+    {
+      "id": "2",
+      "email": "pharmacist@gmail.com",
+      "password": "456",
+      "role": "pharmacist"
+    }
+  ],
+  "prescriptions": [
+    {
+      "id": "2032",
+      "patientId": "P123456",
+      "patientName": "John Doe",
+      "age": 45,
+      "allergies": [
+        "Penicillin",
+        "Peanuts"
+      ],
+      "diagnosis": "",
+      "prescriptionDate": "",
+      "medications": [
+        {
+          "id": 1,
+          "name": "Metformin",
+          "dosage": "500mg",
+          "frequency": "Twice daily",
+          "duration": "7 days",
+          "quantity": 14
+        },
+        {
+          "id": 2,
+          "name": "",
+          "dosage": "",
+          "frequency": "Three times daily",
+          "duration": "1 month",
+          "quantity": 90
+        },
+        {
+          "id": 3,
+          "name": "Lisinopril",
+          "dosage": "1000mg",
+          "frequency": "Twice daily",
+          "duration": "1 month",
+          "quantity": 60
+        }
+      ]
+    }
+  ],
+  "auto_dispense": [
+    {
+      "medicationIds": [
+        1,
+        2
+      ],
+      "id": "3329"
+    }
+  ]
+}
