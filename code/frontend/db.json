@@ -15,7 +15,7 @@
   ],
   "prescriptions": [
     {
-      "id": "2032",
+      "id": "882b",
       "patientId": "P123456",
       "patientName": "John Doe",
       "age": 45,
@@ -28,27 +28,27 @@
       "medications": [
         {
           "id": 1,
-          "name": "Metformin",
-          "dosage": "500mg",
-          "frequency": "Twice daily",
-          "duration": "7 days",
-          "quantity": 14
-        },
-        {
-          "id": 2,
-          "name": "",
-          "dosage": "",
+          "name": "Amoxicillin",
+          "dosage": "250mg",
           "frequency": "Three times daily",
           "duration": "1 month",
           "quantity": 90
         },
         {
+          "id": 2,
+          "name": "Metformin",
+          "dosage": "",
+          "frequency": "Twice daily",
+          "duration": "5 days",
+          "quantity": 10
+        },
+        {
           "id": 3,
           "name": "Lisinopril",
-          "dosage": "1000mg",
-          "frequency": "Twice daily",
+          "dosage": "",
+          "frequency": "",
           "duration": "1 month",
-          "quantity": 60
+          "quantity": null
         }
       ]
     }

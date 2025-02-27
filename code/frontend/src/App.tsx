@@ -11,6 +11,23 @@ import DoctorDashboardHeader from './Doctor/Doctor_DashboardHeader.js';
 import PharmacistPrescription from './Pharmacist/Pharmacist_prescription.js';
 import PatientRecords from './Doctor/All_patient_records.js';
 
+// Role-based route protection component
+const ProtectedRoute = ({ user, allowedRoles, children, redirectPath = "/login" }) => {
+  // If user isn't logged in, redirect to login
+  if (!user) {
+    return <Navigate to={redirectPath} replace />;
+  }
+  
+  // If user's role isn't in the allowed roles, redirect to their dashboard
+  if (!allowedRoles.includes(user.role)) {
+    // Redirect doctor to doc_dashboard and pharmacist to pharm_dashboard
+    const defaultPath = user.role === 'doctor' ? '/doc_dashboard' : '/pharm_dashboard';
+    return <Navigate to={defaultPath} replace />;
+  }
+  
+  // User is authenticated and authorized
+  return children;
+};
 
 // AppContent component to access useLocation inside Router
 const AppContent = ({ user, setUser }) => {
@@ -18,6 +35,10 @@ const AppContent = ({ user, setUser }) => {
   
   // Don't show navbar on login pages
   const hideNavbar = location.pathname === '/' || location.pathname === '/login';
+  
+  // Define role-specific route access
+  const doctorRoutes = ['doc_dashboard', 'profile', 'scan'];
+  const pharmacistRoutes = ['pharm_dashboard', 'pharmacist_prescription'];
   
   return (
     <>
@@ -28,40 +49,60 @@ const AppContent = ({ user, setUser }) => {
         <Route path="/" element={<Login_window setUser={setUser} />} />
         <Route path="/login" element={<Login_window setUser={setUser} />} />
 
-        {/* Protected Routes */}
+        {/* Protected Pharmacist Routes */}
         <Route 
           path="/pharm_dashboard" 
           element={
-            user ? <DispenserDashboard /> : <Navigate to="/login" />
-          } 
-        />
-        <Route 
-          path="/doc_dashboard" 
-          element={
-            user ? (
-              <>
-                <DoctorDashboardHeader user={user} />
-                <PatientRecords  />
-              </>
-            ) : <Navigate to="/login" />
-          } 
-        />
-        <Route 
-          path="/profile" 
-          element={
-            user ? <PatientProfile /> : <Navigate to="/login" />
+            <ProtectedRoute user={user} allowedRoles={['pharmacist']}>
+              <DispenserDashboard />
+            </ProtectedRoute>
           } 
         />
         <Route 
           path="/pharmacist_prescription" 
           element={
-            user ? <PharmacistPrescription /> : <Navigate to="/login" />
+            <ProtectedRoute user={user} allowedRoles={['pharmacist']}>
+              <PharmacistPrescription />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Protected Doctor Routes */}
+        <Route 
+          path="/doc_dashboard" 
+          element={
+            <ProtectedRoute user={user} allowedRoles={['doctor']}>
+              <>
+                <DoctorDashboardHeader user={user} />
+                <PatientRecords />
+              </>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute user={user} allowedRoles={['doctor']}>
+              <PatientProfile />
+            </ProtectedRoute>
           } 
         />
         <Route 
           path="/scan" 
           element={
-            user ? <RFIDScanPage /> : <Navigate to="/login" />
+            <ProtectedRoute user={user} allowedRoles={['doctor']}>
+              <RFIDScanPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* 404 Not Found - catch-all route */}
+        <Route 
+          path="*" 
+          element={
+            user 
+              ? <Navigate to={user.role === 'doctor' ? '/doc_dashboard' : '/pharm_dashboard'} /> 
+              : <Navigate to="/login" />
           } 
         />
       </Routes>

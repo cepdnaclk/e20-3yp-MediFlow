@@ -16,6 +16,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/prescriptions", require("./routes/prescriptionRoutes"));
+app.use("/api/auto-dispense", require("./routes/autoDispenseRoutes"));
 
 module.exports = app;
 

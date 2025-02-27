@@ -42,7 +42,17 @@ const PatientProfile: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
+  
+    // Get token from localStorage
+    const token = localStorage.getItem("token");
+    
+    // If no token is found, redirect to login
+    if (!token) {
+      console.error("Authentication token not found");
+      navigate('/login');
+      return;
+    }
+  
     const prescriptionData = {
       patientId: 'P123456',
       patientName: 'John Doe',
@@ -55,20 +65,33 @@ const PatientProfile: React.FC = () => {
         quantity: calculateQuantity(med.frequency, med.duration),
       })),
     };
-
+  
     try {
-      const response = await fetch('http://localhost:5000/prescriptions', {
+      // Updated to use the backend API endpoint with token authentication
+      const response = await fetch('http://localhost:5000/api/prescriptions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(prescriptionData),
       });
-
+  
       if (response.ok) {
+        // Success message or redirect
+        console.log("Prescription created successfully");
         navigate('/scan');
       } else {
-        console.error('Failed to save prescription');
+        // Handle specific status codes
+        if (response.status === 401) {
+          console.error('Authentication expired. Please login again.');
+          navigate('/login');
+        } else if (response.status === 403) {
+          console.error('You do not have permission to create prescriptions');
+        } else {
+          const errorData = await response.json();
+          console.error('Failed to save prescription:', errorData.message);
+        }
       }
     } catch (error) {
       console.error('Error saving prescription:', error);
@@ -121,13 +144,13 @@ const PatientProfile: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold text-gray-700 mb-4">Prescription Details</h3>
                 <div className="space-y-4">
-                  <input 
-                    type="date" 
-                    className="w-full p-4 text-lg border rounded-xl focus:ring-2 focus:ring-blue-600" 
+                  <input
+                    type="date"
+                    className="w-full p-4 text-lg border rounded-xl focus:ring-2 focus:ring-blue-600"
                     value={prescriptionDate}
                     onChange={(e) => setPrescriptionDate(e.target.value)}
                   />
-                  <select 
+                  <select
                     className="w-full p-4 text-lg border rounded-xl focus:ring-2 focus:ring-blue-600"
                     value={diagnosis}
                     onChange={(e) => setDiagnosis(e.target.value)}
@@ -145,14 +168,14 @@ const PatientProfile: React.FC = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-700">Medications</h3>
-                
+
                 <button
                   type="button"
                   onClick={handleAddMedication}
                   className="text-lg bg-blue-600 text-white py-3 px-6 rounded-xl hover:bg-blue-700 transition-all font-semibold "
                 >
                   <div className="flex items-center space-x-2">
-                  <FaPlusCircle className="mr-2" /> Add Medication
+                    <FaPlusCircle className="mr-2" /> Add Medication
                   </div>
                 </button>
               </div>
@@ -167,7 +190,7 @@ const PatientProfile: React.FC = () => {
                   >
                     <FaTimes className="text-lg" />
                   </button>
-                  <select 
+                  <select
                     className="w-full p-4 text-lg border rounded-xl focus:ring-2 focus:ring-blue-600"
                     value={med.name}
                     onChange={(e) => {
@@ -180,7 +203,7 @@ const PatientProfile: React.FC = () => {
                     <option value="Metformin">Metformin</option>
                     <option value="Lisinopril">Lisinopril</option>
                   </select>
-                  <select 
+                  <select
                     className="w-full p-4 text-lg border rounded-xl focus:ring-2 focus:ring-blue-600"
                     value={med.dosage}
                     onChange={(e) => {
@@ -193,7 +216,7 @@ const PatientProfile: React.FC = () => {
                     <option value="500mg">500mg</option>
                     <option value="1000mg">1000mg</option>
                   </select>
-                  <select 
+                  <select
                     className="w-full p-4 text-lg border rounded-xl focus:ring-2 focus:ring-blue-600"
                     value={med.frequency}
                     onChange={(e) => {
@@ -206,7 +229,7 @@ const PatientProfile: React.FC = () => {
                     <option value="Twice daily">Twice daily</option>
                     <option value="Three times daily">Three times daily</option>
                   </select>
-                  <select 
+                  <select
                     className="w-full p-4 text-lg border rounded-xl focus:ring-2 focus:ring-blue-600"
                     value={med.duration}
                     onChange={(e) => {

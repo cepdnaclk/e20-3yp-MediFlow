@@ -3,13 +3,18 @@ const Prescription = require("../models/Prescription");
 // Create Prescription
 exports.createPrescription = async (req, res) => {
     try {
-        const { patientId, medicines } = req.body;
+        const { patientId, patientName, age, allergies, diagnosis, prescriptionDate, medications } = req.body;
         const doctorId = req.user.id; // Get doctor ID from JWT
 
         const prescription = await Prescription.create({
             patientId,
+            patientName,
+            age,
             doctorId,
-            medicines
+            allergies,
+            diagnosis,
+            prescriptionDate,
+            medications
         });
 
         res.status(201).json({ message: "Prescription created", prescription });

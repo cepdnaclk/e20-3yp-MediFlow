@@ -188,7 +188,7 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                 className="flex items-center"
               >
                 <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-indigo-100">
-                  <img src="/doctor.png" alt="User" />
+                  <img src="/pharmacist.jpeg" alt="User" />
                 </div>
                 <div className="ml-2 hidden lg:block">
                   <p className="text-sm font-medium text-gray-700">{userInfo.name}</p>
