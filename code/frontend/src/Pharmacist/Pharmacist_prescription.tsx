@@ -26,75 +26,75 @@ const PharmacistPrescription: React.FC = () => {
         setLoading(true);
         // Get token from localStorage
         const token = localStorage.getItem('token');
-        
+
         // Check if token exists
         if (!token) {
           console.error('No authentication token found');
           window.location.href = '/login';
           return;
         }
-  
+
         // Set up request headers with authentication token
         const headers = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         };
-  
+
         // Fetch prescriptions with authentication
         const prescriptionsResponse = await fetch('http://localhost:5000/api/prescriptions', {
           headers
         });
-  
+
         if (prescriptionsResponse.status === 401 || prescriptionsResponse.status === 403) {
           console.error('Authentication failed or access denied');
           window.location.href = '/login';
           return;
         }
-  
+
         const prescriptionsData = await prescriptionsResponse.json();
         console.log('Prescriptions data:', prescriptionsData);
-        
+
         // Extract the array from the response object
         const prescriptionsArray = prescriptionsData.prescriptions || [];
-        
+
         // Fetch auto-dispense data with authentication
         const autoDispenseResponse = await fetch('http://localhost:5000/api/auto-dispense', {
           headers
         });
-  
+
         if (autoDispenseResponse.status === 401 || autoDispenseResponse.status === 403) {
           console.error('Authentication failed or access denied');
           window.location.href = '/login';
           return;
         }
-  
+
         const autoDispenseData = await autoDispenseResponse.json();
         console.log('Auto-dispense data:', autoDispenseData);
-        
+
         // Extract the array from the auto-dispense response object
         const autoDispenseArray = autoDispenseData.autoDispense || [];
-  
+
         // Set prescriptions with progress tracking
         const enhancedPrescriptions = prescriptionsArray.map(prescription => ({
           ...prescription,
           progress: 0,
           completed: false
         }));
-        
+
         setPrescriptions(enhancedPrescriptions);
-        
+
         // If prescriptions exist, set up the first prescription
         if (enhancedPrescriptions.length > 0) {
           loadPrescriptionData(enhancedPrescriptions[0], autoDispenseArray);
         }
-        
+
         setLoading(false);
       } catch (error) {
         console.error('Error fetching prescriptions:', error);
         setLoading(false);
       }
     };
-  
+
     fetchPrescriptions();
   }, []);
 
@@ -115,7 +115,7 @@ const PharmacistPrescription: React.FC = () => {
         ...medication,
         completed: false
       };
-      
+
       if (autoDispenseArray.some(entry => entry.medicationIds.includes(medication.id))) {
         autoDispense.push(enhancedMedication);
       } else {
@@ -139,7 +139,7 @@ const PharmacistPrescription: React.FC = () => {
     if (currentPrescriptionIndex < prescriptions.length - 1) {
       const nextIndex = currentPrescriptionIndex + 1;
       setCurrentPrescriptionIndex(nextIndex);
-      
+
       // Get auto-dispense data (in a real app, you'd fetch this again if needed)
       const token = localStorage.getItem('token');
       fetch('http://localhost:5000/api/auto-dispense', {
@@ -148,14 +148,14 @@ const PharmacistPrescription: React.FC = () => {
           'Authorization': `Bearer ${token}`
         }
       })
-      .then(res => res.json())
-      .then(data => {
-        const autoDispenseArray = data.autoDispense || [];
-        loadPrescriptionData(prescriptions[nextIndex], autoDispenseArray);
-      })
-      .catch(error => {
-        console.error('Error fetching auto-dispense data:', error);
-      });
+        .then(res => res.json())
+        .then(data => {
+          const autoDispenseArray = data.autoDispense || [];
+          loadPrescriptionData(prescriptions[nextIndex], autoDispenseArray);
+        })
+        .catch(error => {
+          console.error('Error fetching auto-dispense data:', error);
+        });
     }
   };
 
@@ -164,7 +164,7 @@ const PharmacistPrescription: React.FC = () => {
     if (currentPrescriptionIndex > 0) {
       const prevIndex = currentPrescriptionIndex - 1;
       setCurrentPrescriptionIndex(prevIndex);
-      
+
       // Get auto-dispense data
       const token = localStorage.getItem('token');
       fetch('http://localhost:5000/api/auto-dispense', {
@@ -173,25 +173,65 @@ const PharmacistPrescription: React.FC = () => {
           'Authorization': `Bearer ${token}`
         }
       })
-      .then(res => res.json())
-      .then(data => {
-        const autoDispenseArray = data.autoDispense || [];
-        loadPrescriptionData(prescriptions[prevIndex], autoDispenseArray);
-      })
-      .catch(error => {
-        console.error('Error fetching auto-dispense data:', error);
-      });
+        .then(res => res.json())
+        .then(data => {
+          const autoDispenseArray = data.autoDispense || [];
+          loadPrescriptionData(prescriptions[prevIndex], autoDispenseArray);
+        })
+        .catch(error => {
+          console.error('Error fetching auto-dispense data:', error);
+        });
     }
   };
 
-  // Mark auto-dispense medicines as completed
-  const handleProceedAutoDispense = () => {
-    setAutoDispenseMedicines((prev) =>
-      prev.map((med) => ({ ...med, completed: true }))
-    );
-    
-    // Update prescription progress
-    updatePrescriptionProgress();
+  // Mark auto-dispense medicines as completed and trigger automatic dispenser
+  const handleProceedAutoDispense = async () => {
+    try {
+      // Get authentication token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+
+      // Extract medications that need to be dispensed with their quantities
+      const medicationsToDispense = autoDispenseMedicines.map(med => ({
+        id: med.id,
+        name: med.name,
+        quantity: med.quantity || 1 // Default to 1 if not specified
+      }));
+
+      // Send request to backend to trigger individual dispensers via AWS IoT MQTT
+      const response = await fetch('http://localhost:5000/api/auto-dispense/trigger', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          prescriptionId: currentPrescription.id,
+          medications: medicationsToDispense
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to trigger dispensers');
+      }
+      const responseData = await response.json();
+      console.log(responseData.message);
+      //After successful API call, update UI state
+      setAutoDispenseMedicines((prev) =>
+        prev.map((med) => ({ ...med, completed: true }))
+      );
+
+      //Update prescription progress
+      updatePrescriptionProgress();
+
+    } catch (error) {
+      console.error('Error triggering dispensers:', error);
+      alert('Failed to communicate with dispensers. Please try again.');
+    }
   };
 
   // Mark manual dispense medicine as done
@@ -199,7 +239,7 @@ const PharmacistPrescription: React.FC = () => {
     setManualDispenseMedicines((prev) =>
       prev.map((med) => (med.id === id ? { ...med, completed: true } : med))
     );
-    
+
     // Update prescription progress
     updatePrescriptionProgress();
   };
@@ -211,9 +251,9 @@ const PharmacistPrescription: React.FC = () => {
       ...autoDispenseMedicines.filter(med => med.completed),
       ...manualDispenseMedicines.filter(med => med.completed)
     ].length;
-    
+
     const progress = totalMeds > 0 ? Math.round((completedMeds / totalMeds) * 100) : 0;
-    
+
     // Update progress in prescriptions array
     const updatedPrescriptions = [...prescriptions];
     updatedPrescriptions[currentPrescriptionIndex].progress = progress;
@@ -313,8 +353,8 @@ const PharmacistPrescription: React.FC = () => {
                 Prescription {currentPrescriptionIndex + 1} of {prescriptions.length}
               </div>
               <div className="w-64 h-3 bg-gray-200 rounded-full mt-2">
-                <div 
-                  className="h-3 bg-blue-600 rounded-full" 
+                <div
+                  className="h-3 bg-blue-600 rounded-full"
                   style={{ width: `${currentPrescription.progress || 0}%` }}
                 />
               </div>
@@ -342,9 +382,8 @@ const PharmacistPrescription: React.FC = () => {
               {autoDispenseMedicines.map((med) => (
                 <div
                   key={med.id}
-                  className={`flex items-center justify-between p-6 rounded-xl shadow-md transition-all ${
-                    med.completed ? 'bg-green-50' : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
+                  className={`flex items-center justify-between p-6 rounded-xl shadow-md transition-all ${med.completed ? 'bg-green-50' : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
                 >
                   <div>
                     <h4 className="text-xl font-semibold text-gray-800">
@@ -360,11 +399,10 @@ const PharmacistPrescription: React.FC = () => {
                 <button
                   onClick={handleProceedAutoDispense}
                   disabled={autoDispenseMedicines.every(med => med.completed)}
-                  className={`py-3 px-6 rounded-lg transition-all font-semibold text-lg flex items-center ${
-                    autoDispenseMedicines.every(med => med.completed)
-                      ? 'bg-gray-400 text-white cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
-                  }`}
+                  className={`py-3 px-6 rounded-lg transition-all font-semibold text-lg flex items-center ${autoDispenseMedicines.every(med => med.completed)
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
                 >
                   <FaChevronCircleRight className="mr-2" /> Proceed
                 </button>
@@ -390,9 +428,8 @@ const PharmacistPrescription: React.FC = () => {
               {manualDispenseMedicines.map((med) => (
                 <div
                   key={med.id}
-                  className={`flex items-center justify-between p-6 rounded-xl shadow-md transition-all ${
-                    med.completed ? 'bg-green-50' : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
+                  className={`flex items-center justify-between p-6 rounded-xl shadow-md transition-all ${med.completed ? 'bg-green-50' : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
                 >
                   <div>
                     <h4 className="text-xl font-semibold text-gray-800">
@@ -424,31 +461,29 @@ const PharmacistPrescription: React.FC = () => {
           <button
             onClick={handlePreviousPrescription}
             disabled={currentPrescriptionIndex === 0}
-            className={`py-3 px-6 rounded-lg transition-all font-semibold text-lg flex items-center ${
-              currentPrescriptionIndex === 0
-                ? 'bg-gray-400 text-white cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            }`}
+            className={`py-3 px-6 rounded-lg transition-all font-semibold text-lg flex items-center ${currentPrescriptionIndex === 0
+              ? 'bg-gray-400 text-white cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
           >
             <FaChevronCircleLeft className="mr-2" /> Previous Prescription
           </button>
-          
+
           <button
             onClick={handleNextPrescription}
             disabled={currentPrescriptionIndex === prescriptions.length - 1 && allMedicationsCompleted()}
-            className={`py-3 px-6 rounded-lg transition-all font-semibold text-lg flex items-center ${
-              currentPrescriptionIndex === prescriptions.length - 1 && allMedicationsCompleted()
-                ? 'bg-gray-400 text-white cursor-not-allowed'
-                : 'bg-green-600 text-white hover:bg-green-700'
-            }`}
+            className={`py-3 px-6 rounded-lg transition-all font-semibold text-lg flex items-center ${currentPrescriptionIndex === prescriptions.length - 1 && allMedicationsCompleted()
+              ? 'bg-gray-400 text-white cursor-not-allowed'
+              : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
           >
-            <FaChevronCircleRight className="mr-2" /> 
-            {currentPrescriptionIndex === prescriptions.length - 1 
-              ? 'Complete All Prescriptions' 
+            <FaChevronCircleRight className="mr-2" />
+            {currentPrescriptionIndex === prescriptions.length - 1
+              ? 'Complete All Prescriptions'
               : 'Next Prescription'}
           </button>
         </div>
-        
+
         {/* Queue Summary */}
         <div className="bg-white shadow-lg rounded-xl p-6 mb-8">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">
@@ -474,7 +509,7 @@ const PharmacistPrescription: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {prescriptions.map((prescription, index) => (
-                  <tr 
+                  <tr
                     key={prescription.id}
                     className={index === currentPrescriptionIndex ? "bg-blue-50" : ""}
                   >
@@ -489,24 +524,23 @@ const PharmacistPrescription: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        prescription.completed
-                          ? 'bg-green-100 text-green-800'
-                          : index === currentPrescriptionIndex
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${prescription.completed
+                        ? 'bg-green-100 text-green-800'
+                        : index === currentPrescriptionIndex
                           ? 'bg-blue-100 text-blue-800'
                           : 'bg-gray-100 text-gray-800'
-                      }`}>
+                        }`}>
                         {prescription.completed
                           ? 'Completed'
                           : index === currentPrescriptionIndex
-                          ? 'In Progress'
-                          : 'Pending'}
+                            ? 'In Progress'
+                            : 'Pending'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div 
-                          className="bg-blue-600 h-2.5 rounded-full" 
+                        <div
+                          className="bg-blue-600 h-2.5 rounded-full"
                           style={{ width: `${prescription.progress || 0}%` }}
                         ></div>
                       </div>

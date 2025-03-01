@@ -3,7 +3,8 @@ const {
     getAllAutoDispense, 
     createAutoDispense, 
     updateAutoDispense, 
-    deleteAutoDispense 
+    deleteAutoDispense,
+    triggerAutoDispense 
 } = require("../controllers/autoDispenseController");
 const authMiddleware = require("../middleware/authMiddleware");
 const checkRole = require("../middleware/checkRole");
@@ -14,5 +15,7 @@ router.get("/", authMiddleware, checkRole(["doctor", "pharmacist"]), getAllAutoD
 router.post("/", authMiddleware, checkRole(["pharmacist"]), createAutoDispense);
 router.put("/:id", authMiddleware, checkRole(["pharmacist"]), updateAutoDispense);
 router.delete("/:id", authMiddleware, checkRole(["pharmacist"]), deleteAutoDispense);
+
+router.post("/trigger", authMiddleware, checkRole(["pharmacist"]), triggerAutoDispense);
 
 module.exports = router;
