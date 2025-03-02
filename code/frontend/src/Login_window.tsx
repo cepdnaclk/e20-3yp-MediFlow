@@ -192,6 +192,7 @@ const Login_window = ({ setUser }) => {
                 </svg>
                 <input
                   type="email"
+                  id="email"
                   className="w-full py-4 pl-10 pr-4 rounded-xl bg-white bg-opacity-10 border border-gray-400 focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-50 text-gray-700 placeholder-gray-400 transition-all"
                   placeholder="Enter your email"
                   value={formData.email}
@@ -210,6 +211,7 @@ const Login_window = ({ setUser }) => {
                 </svg>
                 <input
                   type="password"
+                  id="password"
                   className="w-full py-4 pl-10 pr-4 rounded-xl bg-white bg-opacity-10 border border-gray-400 focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-50 text-gray-700 placeholder-gray-400 transition-all"
                   placeholder="Enter your password"
                   value={formData.password}
@@ -236,6 +238,7 @@ const Login_window = ({ setUser }) => {
             {/* Submit Button */}
             <button
               type="submit"
+              id="submit"
               className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-700 to-blue-500 text-white font-bold shadow-lg hover:from-teal-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-50 transition-all transform hover:scale-105"
             >
               Sign In

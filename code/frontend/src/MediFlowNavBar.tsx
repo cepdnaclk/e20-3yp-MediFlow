@@ -104,6 +104,7 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                   return (
                     <motion.button
                       key={item.id}
+                      data-testid={`menu-item-${item.id}`}
                       className={`px-3 py-2 rounded-md text-sm font-medium flex items-center relative ${
                         activeItem === item.id 
                           ? 'text-indigo-600' 
@@ -147,7 +148,9 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
             
             {/* Role Indicator */}
             <div className="hidden md:flex">
-              <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+              <div 
+                id="role-indicator"
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
                 userRole === 'doctor' 
                   ? 'bg-blue-100 text-blue-800' 
                   : 'bg-purple-100 text-purple-800'

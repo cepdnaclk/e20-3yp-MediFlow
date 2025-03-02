@@ -250,6 +250,7 @@ const PatientProfile: React.FC = () => {
             {/* Submit Buttons */}
             <div className="flex items-center space-x-6 pt-6 border-t-2">
               <button
+                id='submit'
                 type="submit"
                 className="w-full md:w-auto bg-blue-600 text-white py-4 px-8 rounded-xl hover:bg-blue-700 transition-all font-semibold text-lg"
               >

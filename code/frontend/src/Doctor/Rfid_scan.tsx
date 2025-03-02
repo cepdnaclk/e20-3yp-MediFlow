@@ -31,6 +31,7 @@ const RFIDScanPage: React.FC = () => {
             {scanning ? "Scanning..." : scanned ? "Scan Complete!" : "Align the card within the scan area"}
           </p>
           <button
+            id="start-scan"
             className="mt-6 bg-green-700 text-white py-3 px-8 text-xl rounded-lg hover:bg-green-500 transition duration-300"
             onClick={handleScanStart}
           >
@@ -50,7 +51,9 @@ const RFIDScanPage: React.FC = () => {
             <p className="text-xl text-gray-700 font-semibold">John Doe</p>
             <p className="text-gray-600">Address: 123 Main St, City</p>
             <p className="text-gray-600">Age: 45</p>
-            <button className="mt-6 flex items-center bg-blue-600 text-white py-3 px-8 text-xl rounded-lg hover:bg-blue-500 transition duration-300"
+            <button 
+            id="proceed"
+            className="mt-6 flex items-center bg-blue-600 text-white py-3 px-8 text-xl rounded-lg hover:bg-blue-500 transition duration-300"
             onClick={() => navigate('/profile')}>
               Proceed <FaArrowRight className="ml-3" />
             </button>

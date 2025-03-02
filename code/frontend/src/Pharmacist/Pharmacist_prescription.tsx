@@ -338,7 +338,9 @@ const PharmacistPrescription: React.FC = () => {
                 Current Prescription
               </div>
               <div className="flex items-center mt-2">
-                <div className="text-3xl font-bold text-blue-600 mr-3">
+                <div
+                id="prescription-id" 
+                className="text-3xl font-bold text-blue-600 mr-3">
                   ID: {currentPrescription.id || 'N/A'}
                 </div>
                 {currentPrescription.patientName && (
