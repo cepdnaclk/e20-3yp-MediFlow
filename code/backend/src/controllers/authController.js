@@ -9,6 +9,26 @@ const generateToken = (user) => {
 // Register User
 exports.register = async (req, res) => {
     try {
+        // Verify admin authorization
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: "Authentication required" });
+        }
+
+        const token = authHeader.split(' ')[1];
+        let decodedToken;
+
+        try {
+            decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (error) {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+
+        // Check if user is an admin
+        if (decodedToken.role !== 'admin') {
+            return res.status(403).json({ message: "Only admins can register new users" });
+        }
+
         const { username, email, password, role } = req.body;
 
         // Check if user exists
