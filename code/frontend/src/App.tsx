@@ -10,6 +10,12 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import DoctorDashboardHeader from './Doctor/Doctor_DashboardHeader.js';
 import PharmacistPrescription from './Pharmacist/Pharmacist_prescription.js';
 import PatientRecords from './Doctor/All_patient_records.js';
+import AdminDashboard from './Admin/AdminDashboard.js';
+import DoctorRegistration from './Admin/DoctorRegistration';
+import PatientRegistration from './Admin/PatientRegistration';
+import PharmacistRegistration from './Admin/PharmacistRegistration';
+import AdminRegistration from './Admin/AdminRegistration';
+
 
 // Role-based route protection component
 const ProtectedRoute = ({ user, allowedRoles, children, redirectPath = "/login" }) => {
@@ -20,8 +26,13 @@ const ProtectedRoute = ({ user, allowedRoles, children, redirectPath = "/login" 
   
   // If user's role isn't in the allowed roles, redirect to their dashboard
   if (!allowedRoles.includes(user.role)) {
-    // Redirect doctor to doc_dashboard and pharmacist to pharm_dashboard
-    const defaultPath = user.role === 'doctor' ? '/doc_dashboard' : '/pharm_dashboard';
+    // Redirect doctor to doc_dashboard, pharmacist to pharm_dashboard, and admin to admin_dashboard
+    const defaultPath = 
+      user.role === 'doctor' 
+        ? '/doc_dashboard' 
+        : user.role === 'admin'
+          ? '/admin_dashboard'
+          : '/pharm_dashboard';
     return <Navigate to={defaultPath} replace />;
   }
   
@@ -39,6 +50,7 @@ const AppContent = ({ user, setUser }) => {
   // Define role-specific route access
   const doctorRoutes = ['doc_dashboard', 'profile', 'scan'];
   const pharmacistRoutes = ['pharm_dashboard', 'pharmacist_prescription'];
+  const adminRoutes = ['admin_dashboard', 'user_management'];
   
   return (
     <>
@@ -95,13 +107,65 @@ const AppContent = ({ user, setUser }) => {
             </ProtectedRoute>
           } 
         />
+
+        {/* Protected Admin Routes */}
+        <Route 
+          path="/admin_dashboard" 
+          element={
+            <ProtectedRoute user={user} allowedRoles={['admin']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+            path="/admin/register-patient" 
+            element={
+              <ProtectedRoute user={user} allowedRoles={['admin']}>
+                <PatientRegistration />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/admin/register-doctor" 
+            element={
+              <ProtectedRoute user={user} allowedRoles={['admin']}>
+                <DoctorRegistration />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/admin/register-pharmacist" 
+            element={
+              <ProtectedRoute user={user} allowedRoles={['admin']}>
+                <PharmacistRegistration />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/admin/register-admin" 
+            element={
+              <ProtectedRoute user={user} allowedRoles={['admin']}>
+                <AdminRegistration />
+              </ProtectedRoute>
+            } 
+          />
         
         {/* 404 Not Found - catch-all route */}
         <Route 
           path="*" 
           element={
             user 
-              ? <Navigate to={user.role === 'doctor' ? '/doc_dashboard' : '/pharm_dashboard'} /> 
+              ? <Navigate to={
+                  user.role === 'doctor' 
+                    ? '/doc_dashboard' 
+                    : user.role === 'admin'
+                      ? '/admin_dashboard'
+                      : '/pharm_dashboard'
+                } /> 
               : <Navigate to="/login" />
           } 
         />

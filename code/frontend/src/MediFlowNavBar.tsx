@@ -13,7 +13,9 @@ import {
   LogOut,
   Package,
   ClipboardList,
-  Activity
+  Activity,
+  Shield,
+  UsersIcon
 } from 'lucide-react';
 import { Avatar } from '@radix-ui/react-avatar';
 import { Button } from './components/ui/button.js';
@@ -58,6 +60,13 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
       { id: 'prescriptions', label: 'Prescriptions', icon: ClipboardList },
       // { id: 'medications', label: 'Medications', icon: Package },
       { id: 'settings', label: 'Settings', icon: Settings },
+    ],
+
+    admin: [
+      { id: 'admin_dashboard', label: 'Dashboard', icon: BarChart2 },
+      { id: 'user_management', label: 'Users', icon: UsersIcon },
+      { id: 'roles', label: 'Roles', icon: Shield },
+      { id: 'settings', label: 'Settings', icon: Settings },
     ]
   };
 
@@ -78,6 +87,10 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
     pharmacist: {
       name: 'Lisa Chen',
       title: 'Clinical Pharmacist'
+    },
+    admin: {
+      name: 'Admin User',
+      title: 'System Administrator'
     }
   }[userRole];
 
@@ -123,6 +136,10 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                         }
                         if (item.id === 'doc_dashboard') {
                           navigate('/doc_dashboard');
+
+                        if (item.id === 'admin_dashboard') {
+                          navigate('/admin_dashboard');
+                        }
                         }
                       }}
                       whileHover={{ scale: 1.05 }}
@@ -147,16 +164,16 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
             </div>
             
             {/* Role Indicator */}
-            <div className="hidden md:flex">
-              <div 
-                id="role-indicator"
-                className={`px-3 py-1 rounded-full text-xs font-medium ${
-                userRole === 'doctor' 
-                  ? 'bg-blue-100 text-blue-800' 
+            <div 
+              id="role-indicator"
+              className={`px-3 py-1 rounded-full text-xs font-medium ${
+              userRole === 'doctor' 
+                ? 'bg-blue-100 text-blue-800' 
+                : userRole === 'admin'
+                  ? 'bg-red-100 text-red-800'
                   : 'bg-purple-100 text-purple-800'
               }`}>
-                {userRole === 'doctor' ? 'Doctor' : 'Pharmacist'}
-              </div>
+              {userRole === 'doctor' ? 'Doctor' : userRole === 'admin' ? 'Admin' : 'Pharmacist'}
             </div>
             
             {/* Right Side Actions */}

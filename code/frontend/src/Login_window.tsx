@@ -65,7 +65,9 @@ const Login_window = ({ setUser }) => {
         navigate("/doc_dashboard");
       } else if (user.role === "pharmacist") {
         navigate("/pharm_dashboard");
-      }
+      } else if (user.role === "admin") {
+        navigate("/admin_dashboard");
+      } 
 
     } catch (err) {
       console.error("Error during login:", err);
