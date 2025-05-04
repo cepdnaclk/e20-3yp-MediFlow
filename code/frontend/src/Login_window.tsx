@@ -10,6 +10,70 @@ const Login_window = ({ setUser }) => {
 
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [strings, setStrings] = useState([]);
+  const [particles, setParticles] = useState([]);
+
+  // Generate random curved strings across the screen
+  useEffect(() => {
+    const generatedStrings = [];
+    const generatedParticles = [];
+    
+    // Generate 8 strings
+    for (let i = 0; i < 13; i++) {
+      const startY = Math.random() * window.innerHeight;
+      const endY = Math.random() * window.innerHeight;
+      const controlY1 = Math.random() * window.innerHeight;
+      const controlY2 = Math.random() * window.innerHeight;
+      
+      // Create path for string
+      const path = `M 0,${startY} C ${window.innerWidth/3},${controlY1} ${2*window.innerWidth/3},${controlY2} ${window.innerWidth},${endY}`;
+      
+      generatedStrings.push({
+        id: i,
+        path,
+        opacity: 0.3 + Math.random() * 0.7 // Random opacity
+      });
+      
+      // Create particles for each string
+      for (let j = 0; j < 3; j++) {
+        generatedParticles.push({
+          id: `${i}-${j}`,
+          stringId: i,
+          progress: Math.random(), // Initial position along the path (0-1)
+          speed: 0.002 + Math.random() * 0.0001, // Random speed
+          size: 4 + Math.random() * 5 // Random size
+        });
+      }
+    }
+    
+    setStrings(generatedStrings);
+    setParticles(generatedParticles);
+  }, []);
+  
+  // Animation loop for particles
+  useEffect(() => {
+    if (particles.length === 0) return;
+    
+    const animationFrame = requestAnimationFrame(() => {
+      setParticles(prevParticles => 
+        prevParticles.map(particle => ({
+          ...particle,
+          progress: (particle.progress + particle.speed) % 1
+        }))
+      );
+    });
+    
+    return () => cancelAnimationFrame(animationFrame);
+  }, [particles]);
+  
+  // Calculate point position along a path
+  const getPointOnPath = (pathElement, progress) => {
+    if (!pathElement) return { x: 0, y: 0 };
+    
+    const length = pathElement.getTotalLength();
+    const point = pathElement.getPointAtLength(length * progress);
+    return { x: point.x, y: point.y };
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -75,247 +139,141 @@ const Login_window = ({ setUser }) => {
     }
   };
 
-  // Animated background component for the entire page
-  const AnimatedPageBackground = () => {
-    return (
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        {/* Animated gradient meshes */}
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-purple-900 to-blue-900">
-          {/* Gradient Orbs */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-purple-800 opacity-20 blur-3xl animate-float-slow"></div>
-          <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-blue-600 opacity-20 blur-3xl animate-float-reverse"></div>
-          <div className="absolute top-2/3 left-2/3 w-64 h-64 rounded-full bg-teal-500 opacity-10 blur-3xl animate-pulse" style={{ animationDuration: "8s" }}></div>
-
-          {/* Grid pattern overlay */}
-          <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-
-          {/* Moving particles */}
-          <div className="absolute top-0 left-0 w-full h-full">
-            {Array.from({ length: 20 }).map((_, index) => (
-              <div
-                key={index}
-                className="absolute w-2 h-2 bg-white rounded-full animate-float-particle"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  opacity: 0.1 + Math.random() * 0.3,
-                  animationDuration: `${15 + Math.random() * 30}s`,
-                  animationDelay: `${Math.random() * 10}s`
-                }}
-              ></div>
-            ))}
-          </div>
-
-          {/* Animated lines crossing screen */}
-          <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.6" />
-                <stop offset="50%" stopColor="#3B82F6" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="#0EA5E9" stopOpacity="0.6" />
-              </linearGradient>
-            </defs>
-
-            <line x1="0%" y1="20%" x2="100%" y2="80%" stroke="url(#lineGradient)" strokeWidth="1" className="animate-dash-slow" />
-            <line x1="0%" y1="80%" x2="100%" y2="20%" stroke="url(#lineGradient)" strokeWidth="1" className="animate-dash-slow" style={{ animationDelay: "2s" }} />
-            <line x1="20%" y1="0%" x2="80%" y2="100%" stroke="url(#lineGradient)" strokeWidth="1" className="animate-dash-slow" style={{ animationDelay: "4s" }} />
-            <line x1="80%" y1="0%" x2="20%" y2="100%" stroke="url(#lineGradient)" strokeWidth="1" className="animate-dash-slow" style={{ animationDelay: "6s" }} />
-          </svg>
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative">
-      {/* Animated background for the entire page */}
-      <AnimatedPageBackground />
-
-      <div className="w-full max-w-4xl bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl shadow-2xl flex overflow-hidden border border-white border-opacity-20 relative z-10">
-        {/* Left Section (Brand) with animations */}
-        <div className="flex-1 bg-gradient-to-br from-purple-900 to-blue-600 p-10 flex flex-col items-center justify-center relative overflow-hidden">
-          {/* Animated background elements */}
-          <div className="absolute top-0 left-0 w-full h-full opacity-20">
-            <div className="absolute w-40 h-40 bg-white rounded-full -top-20 -left-20 opacity-30 animate-pulse"></div>
-            <div className="absolute w-60 h-60 bg-white rounded-full -bottom-20 -right-20 opacity-30 animate-pulse" style={{ animationDelay: "1s" }}></div>
-
-            {/* Additional floating elements with animations */}
-            <div className="absolute w-16 h-16 bg-white rounded-full top-1/4 left-1/4 opacity-20 animate-bounce" style={{ animationDuration: "3s" }}></div>
-            <div className="absolute w-12 h-12 bg-white rounded-full bottom-1/3 right-1/3 opacity-20 animate-bounce" style={{ animationDuration: "4s", animationDelay: "0.5s" }}></div>
-            <div className="absolute w-8 h-8 bg-white rounded-full top-1/2 right-1/4 opacity-20 animate-ping" style={{ animationDuration: "5s" }}></div>
+    <div className="relative flex items-center justify-center w-full min-h-screen bg-black overflow-hidden">
+      {/* Background animated strings */}
+      <svg className="absolute inset-0 w-full h-full">
+        {strings.map((string) => (
+          <path
+            key={string.id}
+            d={string.path}
+            fill="none"
+            stroke="rgba(128, 0, 255, 0.4)"
+            strokeWidth="2"
+            strokeOpacity={string.opacity}
+            ref={(el) => {
+              if (el) {
+                // Store the path element reference for calculations
+                string.element = el;
+              }
+            }}
+          />
+        ))}
+        
+        {/* Animated particles along strings */}
+        {particles.map((particle) => {
+          const stringRef = strings.find(s => s.id === particle.stringId)?.element;
+          if (!stringRef) return null;
+          
+          const point = getPointOnPath(stringRef, particle.progress);
+          
+          return (
+            <circle
+              key={particle.id}
+              cx={point.x}
+              cy={point.y}
+              r={particle.size}
+              fill="white"
+              fillOpacity="0.7"
+              filter="blur(2px)"
+            />
+          );
+        })}
+      </svg>
+      
+      {/* Login box */}
+      <div className="z-10 w-120  bg-opacity-5 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-purple-200 border-opacity-10">
+        <div className="flex items-center mb-6 justify-center">
+          <div className="mr-4 bg-purple-900 bg-opacity-10 p-2 rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-15 w-15 text-blue-300" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M7 2a1 1 0 00-.707 1.707L7 4.414v3.758a1 1 0 01-.293.707l-4 4C.817 14.769 2.156 18 4.828 18h10.343c2.673 0 4.012-3.231 2.122-5.121l-4-4A1 1 0 0113 8.172V4.414l.707-.707A1 1 0 0013 2H7zm2 6.172V4h2v4.172a3 3 0 00.879 2.12l1.027 1.028a4 4 0 00-2.171.102l-.47.156a4 4 0 01-2.53 0l-.563-.187a1.993 1.993 0 00-.114-.035l1.063-1.063A3 3 0 009 8.172z" clipRule="evenodd" />
+            </svg>
           </div>
-
-          {/* Brand content with animations */}
-          <div className="relative z-10 flex flex-col items-center">
-            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg mb-8 bg-opacity-90 backdrop-blur-sm animate-pulse">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-teal-600" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M7 2a1 1 0 00-.707 1.707L7 4.414v3.758a1 1 0 01-.293.707l-4 4C.817 14.769 2.156 18 4.828 18h10.343c2.673 0 4.012-3.231 2.122-5.121l-4-4A1 1 0 0113 8.172V4.414l.707-.707A1 1 0 0013 2H7zm2 6.172V4h2v4.172a3 3 0 00.879 2.12l1.027 1.028a4 4 0 00-2.171.102l-.47.156a4 4 0 01-2.53 0l-.563-.187a1.993 1.993 0 00-.114-.035l1.063-1.063A3 3 0 009 8.172z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h1 className="text-white text-5xl font-bold mb-3 animate-fadeIn">Medi-Flow</h1>
-            <p className="text-white text-opacity-90 text-lg transform hover:scale-105 transition-all duration-300">Clinical Management System</p>
-
-            <div className="mt-10 space-y-4 text-white text-opacity-80">
-              <div className="flex items-center transform hover:translate-x-2 transition-transform duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Secure Login</span>
-              </div>
-              <div className="flex items-center transform hover:translate-x-2 transition-transform duration-300" style={{ transitionDelay: "0.1s" }}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                </svg>
-                <span>Multi-role Access</span>
-              </div>
-              <div className="flex items-center transform hover:translate-x-2 transition-transform duration-300" style={{ transitionDelay: "0.2s" }}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>HIPAA Compliant</span>
-              </div>
-            </div>
+          <div className="text-center">
+            <h2 className="text-4xl text-white font-bold mb-1">Medi-Flow</h2>
+            <p className="text-purple-200">Sign in to access your dashboard</p>
           </div>
         </div>
-
-        {/* Right Section (Login Form) with gray borders */}
-        <div className="flex-1 p-10 bg-white bg-opacity-100 backdrop-blur-md">
-          <div className="mb-10">
-            <h2 className="text-3xl text-gray-800 font-bold mb-2">Welcome Back</h2>
-            <p className="text-gray-600 text-opacity-80">Sign in to access your dashboard</p>
+        
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Email Input */}
+          <div>
+            <label className="block text-white text-sm font-medium mb-2" htmlFor="email">
+              Email/Username
+            </label>
+            <div className="relative">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+              </svg>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                className="w-full px-4 py-3 pl-10 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Email Input */}
-            <div>
-              <label className="block text-gray-700 text-opacity-90 font-medium mb-2">Email/Username</label>
-              <div className="relative group">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-opacity-50 group-focus-within:text-teal-400 transition-colors" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                </svg>
-                <input
-                  type="email"
-                  id="email"
-                  className="w-full py-4 pl-10 pr-4 rounded-xl bg-white bg-opacity-10 border border-gray-400 focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-50 text-gray-700 placeholder-gray-400 transition-all"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
-              </div>
+
+          {/* Password Input */}
+          <div>
+            <label className="block text-white text-sm font-medium mb-2" htmlFor="password">
+              Password
+            </label>
+            <div className="relative">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+              </svg>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                className="w-full px-4 py-3 pl-10 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
             </div>
-
-            {/* Password Input */}
-            <div>
-              <label className="block text-gray-700 text-opacity-90 font-medium mb-2">Password</label>
-              <div className="relative group">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-opacity-50 group-focus-within:text-teal-400 transition-colors" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                </svg>
-                <input
-                  type="password"
-                  id="password"
-                  className="w-full py-4 pl-10 pr-4 rounded-xl bg-white bg-opacity-10 border border-gray-400 focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-50 text-gray-700 placeholder-gray-400 transition-all"
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Remember Me & Forgot Password */}
-            <div className="flex justify-between items-center">
-              <label className="flex items-center gap-2 text-gray-600 text-opacity-80 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="rounded bg-white bg-opacity-10 border-gray-400 text-teal-500 focus:ring-teal-400 focus:ring-opacity-50"
-                  checked={formData.rememberMe}
-                  onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                />
-                <span>Remember me</span>
-              </label>
-              <a href="#" className="text-blue-400 hover:text-black transition-colors">Forgot password?</a>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              id="submit"
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-700 to-blue-500 text-white font-bold shadow-lg hover:from-teal-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-50 transition-all transform hover:scale-105"
-            >
-              Sign In
-            </button>
-
-            {/* Error Message */}
-            {error && <p className="text-red-500 font-medium">{error}</p>}
-          </form>
-
-          <div className="mt-8 text-center text-gray-500 text-opacity-70">
-            <p>Need help? <a href="#" className="text-teal-500 hover:text-teal-400">Contact support</a></p>
           </div>
+
+          {/* Remember Me & Forgot Password */}
+          <div className="flex justify-between items-center">
+            <label className="flex items-center gap-2 text-blue-200 cursor-pointer">
+              <input
+                type="checkbox"
+                name="rememberMe"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-700 rounded"
+                checked={formData.rememberMe}
+                onChange={handleChange}
+              />
+              <span className="text-sm">Remember me</span>
+            </label>
+            <a href="#" className="text-sm font-medium text-purple-400 hover:text-blue-300">Forgot password?</a>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            id="submit"
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Sign In
+          </button>
+
+          {/* Error Message */}
+          {error && <p className="text-red-400 font-medium text-center">{error}</p>}
+        </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-blue-200">
+            Need help? <a href="#" className="font-medium text-green-400 hover:text-green-300">Contact support</a>
+          </p>
         </div>
       </div>
-
-      {/* Add CSS for custom animations */}
-      <style>{`
-        /* Define grid pattern */
-        .bg-grid-pattern {
-          background-image: 
-            linear-gradient(to right, rgba(251, 251, 251, 0.13) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-          background-size: 50px 50px;
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 0.5; transform: translateY(0); }
-        }
-        
-        @keyframes float-slow {
-          0% { transform: translate(0, 0); }
-          50% { transform: translate(-30px, 20px); }
-          100% { transform: translate(0, 0); }
-        }
-        
-        @keyframes float-reverse {
-          0% { transform: translate(0, 0); }
-          50% { transform: translate(30px, -20px); }
-          100% { transform: translate(0, 0); }
-        }
-        
-        @keyframes float-particle {
-          0% { transform: translate(0, 0); opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { transform: translate(100px, -100px); opacity: 0; }
-        }
-        
-        @keyframes dash-slow {
-          0% { stroke-dasharray: 0, 1500; stroke-dashoffset: 0; opacity: 0; }
-          2% { opacity: 1; }
-          100% { stroke-dasharray: 1500, 1500; stroke-dashoffset: -1500; opacity: 0; }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 1.5s ease-out;
-        }
-        
-        .animate-float-slow {
-          animation: float-slow 15s ease-in-out infinite;
-        }
-        
-        .animate-float-reverse {
-          animation: float-reverse 18s ease-in-out infinite;
-        }
-        
-        .animate-float-particle {
-          animation: float-particle 30s linear infinite;
-        }
-        
-        .animate-dash-slow {
-          animation: dash-slow 20s linear infinite;
-        }
-      `}</style>
     </div>
   );
 };
