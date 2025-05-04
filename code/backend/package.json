@@ -6,7 +6,8 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "test": "set NODE_ENV=test&& jest --verbose --detectOpenHandles --forceExit",
-    "flush": "node src/utils/flushDb.js"
+    "flush": "node src/utils/flushDb.js",
+    "seed": "node src/utils/seedDb.js"
   },
   "keywords": [],
   "author": "",
