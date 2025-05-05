@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Save, Stethoscope, AlertCircle, Upload } from 'lucide-react';
+import { ArrowLeft, Save, Stethoscope, AlertCircle, Upload, NfcIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const RegisterDoctor = () => {
@@ -13,6 +13,7 @@ const RegisterDoctor = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    nic: '',
     email: '',
     phone: '',
     specialization: '',
@@ -95,6 +96,7 @@ const RegisterDoctor = () => {
       setFormData({
         firstName: '',
         lastName: '',
+        nic: '',
         email: '',
         phone: '',
         specialization: '',
@@ -178,8 +180,7 @@ const RegisterDoctor = () => {
               {/* Personal Information Section */}
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">Personal Information</h2>
-                
-                <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
+                  <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
                   {/* Profile Picture Upload */}
                   <div className="flex-shrink-0">
                     <div className="w-32 h-32 rounded-full border-2 border-gray-300 flex items-center justify-center overflow-hidden relative bg-gray-100">
@@ -206,7 +207,7 @@ const RegisterDoctor = () => {
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                        First Name
+                        First Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -220,7 +221,7 @@ const RegisterDoctor = () => {
                     </div>
                     <div>
                       <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                        Last Name
+                        Last Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -233,8 +234,23 @@ const RegisterDoctor = () => {
                       />
                     </div>
                     <div>
+                      <label htmlFor="nic" className="block text-sm font-medium text-gray-700 mb-1">
+                        NIC Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="nic"
+                        name="nic"
+                        value={formData.nic}
+                        onChange={handleChange}
+                        required
+                        pattern="^([0-9]{9}[vVxX]|[0-9]{12})$"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                      />
+                    </div>
+                    <div>
                       <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                        Email Address
+                        Email Address 
                       </label>
                       <input
                         type="email"
@@ -242,13 +258,12 @@ const RegisterDoctor = () => {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        required
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                       />
                     </div>
                     <div>
                       <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone Number
+                        Phone Number <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="tel"
@@ -263,6 +278,7 @@ const RegisterDoctor = () => {
                   </div>
                 </div>
               </div>
+              
 
               {/* Professional Information Section */}
               <div className="space-y-6">
@@ -270,7 +286,7 @@ const RegisterDoctor = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="specialization" className="block text-sm font-medium text-gray-700 mb-1">
-                      Medical Specialization
+                      Medical Specialization <span className="text-red-500">*</span>
                     </label>
                     <select
                       id="specialization"
@@ -293,7 +309,7 @@ const RegisterDoctor = () => {
                   </div>
                   <div>
                     <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-1">
-                      Years of Experience
+                      Years of Experience <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -308,7 +324,7 @@ const RegisterDoctor = () => {
                   </div>
                   <div>
                     <label htmlFor="qualifications" className="block text-sm font-medium text-gray-700 mb-1">
-                      Qualifications/Degrees
+                      Qualifications/Degrees <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -323,7 +339,7 @@ const RegisterDoctor = () => {
                   </div>
                   <div>
                     <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                      Medical License Number
+                      Medical License Number <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -350,7 +366,7 @@ const RegisterDoctor = () => {
                   </div>
                 </div>
               </div>
-
+              
               {/* Weekly Availability */}
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">Weekly Availability</h2>
@@ -400,7 +416,7 @@ const RegisterDoctor = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                      Username
+                      Username<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -415,7 +431,7 @@ const RegisterDoctor = () => {
                   <div></div>
                   <div>
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                      Password
+                      Password<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="password"
@@ -429,7 +445,7 @@ const RegisterDoctor = () => {
                   </div>
                   <div>
                     <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                      Confirm Password
+                      Confirm Password<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="password"

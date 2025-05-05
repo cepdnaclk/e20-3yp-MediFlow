@@ -18,6 +18,7 @@ const RegisterPatient = () => {
     firstName: '',
     lastName: '',
     dateOfBirth: '',
+    nic: '',
     gender: 'male',
     email: '',
     phone: '',
@@ -27,6 +28,7 @@ const RegisterPatient = () => {
     zipCode: '',
     emergencyContactName: '',
     emergencyContactPhone: '',
+    emergencyContactRelationship: '',
     bloodType: '',
     allergies: '',
     medicalConditions: '',
@@ -100,6 +102,7 @@ const RegisterPatient = () => {
         firstName: '',
         lastName: '',
         dateOfBirth: '',
+        nic: '',
         gender: 'male',
         email: '',
         phone: '',
@@ -109,6 +112,7 @@ const RegisterPatient = () => {
         zipCode: '',
         emergencyContactName: '',
         emergencyContactPhone: '',
+        emergencyContactRelationship: '',
         bloodType: '',
         allergies: '',
         medicalConditions: '',
@@ -352,6 +356,19 @@ const RegisterPatient = () => {
                     />
                   </div>
                   <div>
+                    <label htmlFor="nic" className="block text-sm font-medium text-gray-700 mb-1">
+                      NIC Number 
+                    </label>
+                    <input
+                      type="text"
+                      id="nic"
+                      name="nic"
+                      value={formData.nic}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    />
+                  </div>
+                  <div>
                     <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
                       Gender
                     </label>
@@ -464,7 +481,7 @@ const RegisterPatient = () => {
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
-                        State
+                        Province
                       </label>
                       <input
                         type="text"
@@ -528,6 +545,19 @@ const RegisterPatient = () => {
                       required
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                     />
+                  </div>
+                  <div>
+                    <label htmlFor="emergencyContactRelationship" className="block text-sm font-medium text-gray-700 mb-1">
+                      Relationship <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="emergencyContactRelationship"
+                      name="emergencyContactRelationship"
+                      value={formData.emergencyContactRelationship}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      />
                   </div>
                 </div>
               </div>

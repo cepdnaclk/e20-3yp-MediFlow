@@ -10,6 +10,7 @@ const PharmacistRegistration = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    nic: '',
     email: '',
     phone: '',
     specialization: '',
@@ -86,6 +87,7 @@ const PharmacistRegistration = () => {
         setFormData({
           firstName: '',
           lastName: '',
+          nic: '',
           email: '',
           phone: '',
           specialization: '',
@@ -264,6 +266,24 @@ const PharmacistRegistration = () => {
                         />
                         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                           <User className="h-4 w-4 text-gray-400" />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <label className="block text-sm font-medium text-gray-700">NIC Number <span className="text-red-500">*</span></label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          name="nic"
+                          value={formData.nic}
+                          onChange={handleChange}
+                          required
+                          pattern="^([0-9]{9}[vVxX]|[0-9]{12})$"
+                          className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                        />
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                          <BadgeCheck className="h-4 w-4 text-gray-400" />
                         </div>
                       </div>
                     </div>
