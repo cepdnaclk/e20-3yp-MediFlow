@@ -1,4 +1,5 @@
 const Patient = require("../models/Patient");
+const { getPatientPhoto } = require("../config/s3.config");
 
 // Register a new patient
 exports.registerPatient = async (req, res) => {
@@ -90,8 +91,23 @@ exports.getPatientById = async (req, res) => {
         if (!patient) {
             return res.status(404).json({ message: "Patient not found" });
         }
+
+        const expirationTimes = {
+                'admin': 1800,   // 30 minutes
+                'doctor': 1200,  // 20 minutes
+                'nurse': 900,    // 15 minutes
+                'default': 600   // 10 minutes
+              };
+              
+        const expireTime = expirationTimes[req.user?.role] || expirationTimes.default;
         
-        res.json({ patient });
+        // Use the utility function to get the signed URL
+        const photoData = await getPatientPhoto(patient.photo, expireTime);
+
+        const patientData = patient.toJSON();
+        patientData.photo = photoData.url;
+        
+        res.json({ patientData });
     } catch (error) {
         res.status(500).json({ message: "Error fetching patient", error: error.message });
     }
