@@ -34,7 +34,6 @@ const RegisterPatient = () => {
     medicalConditions: '',
     height: '',
     weight: '',
-    // New fields
     rfidCardUID: '',
     cardIssueDate: today,
     cardStatus: 'active'
@@ -73,27 +72,30 @@ const RegisterPatient = () => {
     setSuccessMessage('');
     
     try {
-      // Combine all data including the photo
-      const patientData = {
-        ...formData,
-        photo: photoPreview // In a real app, you'd handle file upload differently
-      };
+      // Create FormData object for multipart/form-data upload
+      const formDataToSend = new FormData();
       
-      // In a real application, you would send this data to your API
-      // const response = await fetch('http://localhost:5000/api/patients', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${localStorage.getItem('token')}`
-      //   },
-      //   body: JSON.stringify(patientData)
-      // });
+      // Add all form data fields
+      Object.keys(formData).forEach(key => {
+        formDataToSend.append(key, formData[key]);
+      });
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Add the photo file if it exists
+      if (fileInputRef.current && fileInputRef.current.files[0]) {
+        formDataToSend.append('photo', fileInputRef.current.files[0]);
+      }
       
-      // if (!response.ok) throw new Error('Failed to register patient');
-      // const data = await response.json();
+      const response = await fetch('http://localhost:5000/api/patients', {
+        method: 'POST',
+        headers: {
+          // Don't set Content-Type when sending FormData
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formDataToSend
+      });
+      console.log(response)
+      if (!response.ok) throw new Error('Failed to register patient');
+      const data = await response.json();
       
       setSuccessMessage(`Patient ${formData.firstName} ${formData.lastName} registered successfully with RFID card!`);
       
