@@ -114,7 +114,7 @@ const RFIDScanPage: React.FC = () => {
             <button 
               id="proceed"
               className="mt-6 flex items-center bg-blue-600 text-white py-3 px-8 text-xl rounded-lg hover:bg-blue-500 transition duration-300"
-              onClick={() => navigate(`/profile/${patient.id}`)}
+              onClick={() => navigate(`/profile`, { state: { patient } })}
             >
               Proceed <FaArrowRight className="ml-3" />
             </button>
