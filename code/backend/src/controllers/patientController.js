@@ -12,6 +12,12 @@ exports.registerPatient = async (req, res) => {
             height, weight, rfidCardUID, cardIssueDate, cardStatus
         } = req.body;
 
+        const sanitizedData = {
+            ...req.body,
+            height: height === '' ? null : parseFloat(height),
+            weight: weight === '' ? null : parseFloat(weight)
+        };
+
         // Check if rfidCardUID is already in use
         const existingCard = await Patient.findOne({ where: { rfidCardUID } });
         if (existingCard) {
@@ -23,8 +29,10 @@ exports.registerPatient = async (req, res) => {
         // Get the photo URL from S3 upload (if any)
         const photoUrl = req.file ? req.file.location : null;
 
+        const patient = await Patient.create(sanitizedData);
+
         // Create new patient
-        const patient = await Patient.create({
+        /*const patient = await Patient.create({
             firstName,
             lastName,
             dateOfBirth,
@@ -48,7 +56,7 @@ exports.registerPatient = async (req, res) => {
             cardIssueDate,
             cardStatus,
             photo: photoUrl
-        });
+        });*/
 
         res.status(201).json({ 
             success: true,
@@ -110,5 +118,41 @@ exports.getPatientById = async (req, res) => {
         res.json({ patientData });
     } catch (error) {
         res.status(500).json({ message: "Error fetching patient", error: error.message });
+    }
+};
+
+// Get patient by RFID UID
+exports.getPatientByRFID = async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const patient = await Patient.findOne({ where: { rfidCardUID: uid.trim() } });
+
+        if (!patient) {
+            return res.status(404).json({ message: "Patient not found for given RFID UID" });
+        }
+
+        const expirationTimes = {
+            'admin': 1800,
+            'doctor': 1200,
+            'nurse': 900,
+            'default': 600
+        };
+
+        const expireTime = expirationTimes[req.user?.role] || expirationTimes.default;
+
+        const patientData = patient.toJSON();
+        patientData.age = patient.getAge();
+
+        if (patient.photo) {
+            const photoData = await getPatientPhoto(patient.photo, expireTime);
+            patientData.photo = photoData.url;
+        } else {
+            patientData.photo = null; 
+        }
+
+        res.json({ patientData });
+    } catch (error) {
+        console.error("Error fetching patient by RFID:", error);
+        res.status(500).json({ message: "Error fetching patient by RFID", error: error.message });
     }
 };
