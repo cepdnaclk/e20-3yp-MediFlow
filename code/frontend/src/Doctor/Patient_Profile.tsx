@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaArrowLeft, FaPills, FaExclamationCircle, FaPlusCircle, FaTimes, FaPrint } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+const API_URL = import.meta.env.REACT_APP_API_URL;
 
 const PatientProfile: React.FC = () => {
   const [medications, setMedications] = useState<any[]>([{ id: 1, name: 'Amoxicillin', dosage: '250mg', frequency: 'Once daily', duration: '7 days' }]);
@@ -68,7 +69,7 @@ const PatientProfile: React.FC = () => {
   
     try {
       // Updated to use the backend API endpoint with token authentication
-      const response = await fetch('http://localhost:5000/api/prescriptions', {
+      const response = await fetch('${API_URL}/api/prescriptions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -7,7 +7,7 @@ import {
   FaChevronCircleRight,
   FaChevronCircleLeft,
 } from "react-icons/fa";
-
+const API_URL = import.meta.env.REACT_APP_API_URL;
 const PharmacistPrescription: React.FC = () => {
   // State for prescriptions queue
   const [prescriptions, setPrescriptions] = useState([]);
@@ -41,7 +41,7 @@ const PharmacistPrescription: React.FC = () => {
         };
 
         // Fetch prescriptions with authentication
-        const prescriptionsResponse = await fetch('http://localhost:5000/api/prescriptions', {
+        const prescriptionsResponse = await fetch('${API_URL}/api/prescriptions', {
           headers
         });
 
@@ -58,7 +58,7 @@ const PharmacistPrescription: React.FC = () => {
         const prescriptionsArray = prescriptionsData.prescriptions || [];
 
         // Fetch auto-dispense data with authentication
-        const autoDispenseResponse = await fetch('http://localhost:5000/api/auto-dispense', {
+        const autoDispenseResponse = await fetch('${API_URL}/api/auto-dispense', {
           headers
         });
 
@@ -142,7 +142,7 @@ const PharmacistPrescription: React.FC = () => {
 
       // Get auto-dispense data (in a real app, you'd fetch this again if needed)
       const token = localStorage.getItem('token');
-      fetch('http://localhost:5000/api/auto-dispense', {
+      fetch('${API_URL}/api/auto-dispense', {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -167,7 +167,7 @@ const PharmacistPrescription: React.FC = () => {
 
       // Get auto-dispense data
       const token = localStorage.getItem('token');
-      fetch('http://localhost:5000/api/auto-dispense', {
+      fetch('${API_URL}/api/auto-dispense', {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -202,7 +202,7 @@ const PharmacistPrescription: React.FC = () => {
       }));
 
       // Send request to backend to trigger individual dispensers via AWS IoT MQTT
-      const response = await fetch('http://localhost:5000/api/auto-dispense/trigger', {
+      const response = await fetch('${API_URL}/api/auto-dispense/trigger', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
