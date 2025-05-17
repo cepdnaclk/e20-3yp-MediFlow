@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerPatient, getAllPatients, getPatientById } = require("../controllers/patientController");
+const { registerPatient, getAllPatients, getPatientById, getPatientByRFID } = require("../controllers/patientController");
 const authMiddleware = require("../middleware/authMiddleware");
 const checkRole = require("../middleware/checkRole");
 const { uploadPatientPhoto , getPatientPhoto } = require("../config/s3.config");
@@ -26,5 +26,7 @@ router.get("/", authMiddleware, checkRole(["admin", "doctor"]), getAllPatients);
 
 // Get patient by ID (admin, doctor, and pharmacist access)
 router.get("/:id", authMiddleware, checkRole(["admin", "doctor", "pharmacist"]), getPatientById);
+
+router.get("/rfid/:uid", authMiddleware, checkRole(["admin", "doctor", "pharmacist"]), getPatientByRFID);
 
 module.exports = router;

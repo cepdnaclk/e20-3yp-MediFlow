@@ -92,6 +92,24 @@ const Patient = sequelize.define("Patient", {
         type: DataTypes.STRING, 
         allowNull: true 
     }
+}, {
+    instanceMethods: {
+        getAge() {
+            if (!this.dateOfBirth) return null;
+            const dob = new Date(this.dateOfBirth);
+            const diffMs = Date.now() - dob.getTime();
+            const ageDt = new Date(diffMs);
+            return Math.abs(ageDt.getUTCFullYear() - 1970);
+        }
+    }
 });
+
+Patient.prototype.getAge = function() {
+    if (!this.dateOfBirth) return null;
+    const dob = new Date(this.dateOfBirth);
+    const diffMs = Date.now() - dob.getTime();
+    const ageDt = new Date(diffMs);
+    return Math.abs(ageDt.getUTCFullYear() - 1970);
+};
 
 module.exports = Patient;

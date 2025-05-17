@@ -8,6 +8,12 @@ const PatientProfile: React.FC = () => {
   const [diagnosis, setDiagnosis] = useState('');
   const [prescriptionDate, setPrescriptionDate] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const patient = location.state?.patient;
+
+  if (!patient) {
+    return <div>No patient data found. Please scan again.</div>;
+  }
 
   const handleAddMedication = () => {
     const newMed = {
@@ -55,10 +61,10 @@ const PatientProfile: React.FC = () => {
     }
   
     const prescriptionData = {
-      patientId: 'P123456',
-      patientName: 'John Doe',
-      age: 45,
-      allergies: ['Penicillin', 'Peanuts'],
+      patientId: patient.id,
+      patientName: `${patient.firstName} ${patient.lastName}`,
+      age: patient.age,
+      allergies: patient.allergies,
       diagnosis,
       prescriptionDate,
       medications: medications.map((med) => ({
@@ -112,7 +118,7 @@ const PatientProfile: React.FC = () => {
               <h1 className="text-3xl font-bold text-gray-800">Patient Profile</h1>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-base text-gray-600">Patient ID: P123456</span>
+              <span className="text-base text-gray-600">Patient ID: {patient.id}</span>
               <button className="text-base bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-all font-semibold">
                 Edit Profile
               </button>
@@ -132,11 +138,11 @@ const PatientProfile: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold text-gray-700 mb-4">Patient Information</h3>
                 <div className="space-y-2 text-base text-gray-600">
-                  <p><strong>Name:</strong> John Doe</p>
-                  <p><strong>Age:</strong> 45 years</p>
+                  <p><strong>Name:</strong> {patient.firstName} {patient.lastName}</p>
+                  <p><strong>Age:</strong> {patient.age} years</p>
                   <div className="flex items-center">
                     <FaExclamationCircle className="text-red-500 mr-2" />
-                    <p><strong>Allergies:</strong> Penicillin, Peanuts</p>
+                    <p><strong>Allergies:</strong> {Array.isArray(patient.allergies) ? patient.allergies.join(', ') : (patient.allergies || 'None')}</p>
                   </div>
                 </div>
               </div>
