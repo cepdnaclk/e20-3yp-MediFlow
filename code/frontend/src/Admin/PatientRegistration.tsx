@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Save, UserPlus, AlertCircle, Upload, CreditCard, Calendar, Camera, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.REACT_APP_API_URL;
+
 const RegisterPatient = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -85,7 +87,7 @@ const RegisterPatient = () => {
         formDataToSend.append('photo', fileInputRef.current.files[0]);
       }
       
-      const response = await fetch('http://localhost:5000/api/patients', {
+      const response = await fetch('${API_URL}/api/patients', {
         method: 'POST',
         headers: {
           // Don't set Content-Type when sending FormData

@@ -4,6 +4,7 @@ import { Database, ArrowLeft, CheckCircle, Upload, X, Pill, BadgeCheck, User, Ph
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card.js';
 import { Button } from '../components/ui/button.js';
 import { useNavigate } from 'react-router-dom';
+const API_URL = import.meta.env.REACT_APP_API_URL;
 
 const PharmacistRegistration = () => {
   const navigate = useNavigate();
@@ -69,7 +70,7 @@ const PharmacistRegistration = () => {
       
       // Make API call to register pharmacist
       // Replace with your actual API endpoint
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch('${API_URL}/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
