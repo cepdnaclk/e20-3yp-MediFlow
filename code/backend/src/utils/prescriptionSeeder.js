@@ -91,6 +91,30 @@ async function seedPrescriptions() {
         }
       ]
     ];
+
+    // Sample patient status values
+    const patientStatusOptions = [
+      "Stable",
+      "Improving",
+      "Needs follow-up",
+      "Critical",
+      "Recovering",
+      "Under observation",
+      "Deteriorating",
+      "Responding to treatment"
+    ];
+
+    // Sample doctor comments
+    const doctorCommentsOptions = [
+      "Patient should drink plenty of fluids and rest.",
+      "Follow up in 2 weeks to reassess medication effectiveness.",
+      "Consider physical therapy if symptoms persist beyond 10 days.",
+      "Blood pressure still higher than optimal, continue monitoring at home.",
+      "Patient reports improvement in symptoms since last visit.",
+      "Patient allergic to penicillin, prescribed alternative antibiotic.",
+      "Patient advised on lifestyle modifications including diet and exercise.",
+      "Patient experiencing side effects from previous medication, switched to alternative.",
+    ];
     
     // Sample diagnoses
     const diagnoses = [
@@ -123,6 +147,8 @@ async function seedPrescriptions() {
         // Select random medication set and diagnosis
         const medications = medicationSets[Math.floor(Math.random() * medicationSets.length)];
         const diagnosis = diagnoses[Math.floor(Math.random() * diagnoses.length)];
+        const patientStatus = patientStatusOptions[Math.floor(Math.random() * patientStatusOptions.length)];
+        const doctorComments = doctorCommentsOptions[Math.floor(Math.random() * doctorCommentsOptions.length)];
         
         // Create the prescription
         const prescription = await Prescription.create({
@@ -134,10 +160,11 @@ async function seedPrescriptions() {
           diagnosis: diagnosis,
           prescriptionDate: prescriptionDate,
           medications: medications,
+          patientStatus: patientStatus,
+          doctorComments: doctorComments,
           // Give a mix of pending and dispensed prescriptions
           status: i === 0 ? "pending" : "dispensed"
         });
-        
         console.log(`✅ Created prescription: ${prescription.id}, Date: ${prescriptionDate}, Diagnosis: ${diagnosis}`);
       }
     }

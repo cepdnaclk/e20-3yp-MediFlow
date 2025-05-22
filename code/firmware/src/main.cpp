@@ -32,6 +32,7 @@ DHT dht(DHTPIN, DHTTYPE);
 int pillCount = 0;
 int targetPillCount = 10;
 bool wasLaserBlocked = false;
+bool dispensing = false; 
 
 // MQTT message callback
 void messageHandler(char *topic, byte *payload, unsigned int length)
@@ -61,11 +62,12 @@ void messageHandler(char *topic, byte *payload, unsigned int length)
   char *actionStart = strstr(message, "\"action\":\"");
   if (actionStart)
   {
-    actionStart += 10; // Move past "action":"
+    actionStart += 10; // Move past "action":" 
     if (strncmp(actionStart, "dispense\"", 9) == 0)
     {
       // Reset pill count for new dispense operation
       pillCount = 0;
+      dispensing = true; 
       Serial.println("Starting new dispense operation");
     }
   }
@@ -181,20 +183,21 @@ void loop()
 
   bool isBlocked = isLaserBlocked();
 
-  if (wasLaserBlocked && !isBlocked)
+  if (dispensing && wasLaserBlocked && !isBlocked)
   {
     pillCount++;
     Serial.print("Pill count: ");
     Serial.println(pillCount);
 
     // Publish pill count update to AWS
-    char msg[50];
+    char msg[128];
     sprintf(msg, "{\"pillCount\":%d,\"targetCount\":%d}", pillCount, targetPillCount);
     mqttClient.publish(PUBLISH_TOPIC, msg);
 
     if (pillCount >= targetPillCount)
     {
       stopMotor();
+      delay(10000);
       closeGate();
       Serial.println("Target pill count reached. Motor stopped.");
 
@@ -203,15 +206,19 @@ void loop()
               pillCount, targetPillCount);
       mqttClient.publish(PUBLISH_TOPIC, msg);
 
-      while (true)
-        ;
+      dispensing = false; 
     }
   }
 
   wasLaserBlocked = isBlocked;
 
-  int motorSpeed = 70;
-  setMotorSpeed(motorSpeed);
+
+  if (dispensing) {
+    int motorSpeed = 90;
+    setMotorSpeed(motorSpeed);
+  } else {
+    stopMotor();
+  }
 
   float temperature = dht.readTemperature();
   if (!isnan(temperature))
@@ -220,7 +227,7 @@ void loop()
     dtostrf(temperature, 1, 2, temperatureStr);
 
     // Publish temperature data
-    char msg[50];
+    char msg[128];
     sprintf(msg, "{\"temperature\":%.2f}", temperature);
     mqttClient.publish(PUBLISH_TOPIC "/temperature", msg);
   }

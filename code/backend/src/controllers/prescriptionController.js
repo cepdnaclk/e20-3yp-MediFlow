@@ -3,7 +3,7 @@ const Prescription = require("../models/Prescription");
 // Create Prescription
 exports.createPrescription = async (req, res) => {
     try {
-        const { patientId, patientName, age, allergies, diagnosis, prescriptionDate, medications } = req.body;
+        const { patientId, patientName, age, allergies, diagnosis, prescriptionDate, medications,patientStatus, doctorComments, } = req.body;
         const doctorId = req.user.id; // Get doctor ID from JWT
 
         const prescription = await Prescription.create({
@@ -14,12 +14,44 @@ exports.createPrescription = async (req, res) => {
             allergies,
             diagnosis,
             prescriptionDate,
-            medications
+            medications,
+            patientStatus, 
+            doctorComments,
         });
 
         res.status(201).json({ message: "Prescription created", prescription });
     } catch (error) {
         res.status(500).json({ message: "Error creating prescription", error: error.message });
+    }
+};
+
+exports.getPatientPrescriptions = async (req, res) => {
+    try {
+        const { patientId } = req.params;
+        
+        
+        // Validate that patientId is available
+        if (!patientId) {
+            return res.status(400).json({ message: "Patient ID is required" });
+        }
+        
+        const prescriptions = await Prescription.findAll({
+            where: { patientId },
+            order: [['createdAt', 'DESC']] // Most recent first
+        });
+        
+        
+        res.json({ 
+            success: true,
+            prescriptions 
+        });
+    } catch (error) {
+        console.error("Error in getPatientPrescriptions:", error);
+        res.status(500).json({ 
+            success: false,
+            message: "Error fetching patient prescriptions", 
+            error: error.message 
+        });
     }
 };
 

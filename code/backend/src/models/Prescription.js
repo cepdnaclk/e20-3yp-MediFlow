@@ -11,6 +11,14 @@ const Prescription = sequelize.define("Prescription", {
         type: DataTypes.JSON,
         defaultValue: [],
     },
+    patientStatus: { 
+    type: DataTypes.STRING,
+    allowNull: true
+    },
+    doctorComments: { 
+        type: DataTypes.TEXT,
+        allowNull: true 
+    },
     diagnosis: { type: DataTypes.STRING },
     prescriptionDate: { type: DataTypes.STRING },
     medications: {
