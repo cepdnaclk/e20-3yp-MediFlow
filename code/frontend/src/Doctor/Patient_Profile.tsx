@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FaArrowLeft, FaPills, FaExclamationCircle, FaPlusCircle, FaTimes, FaPrint, FaHistory, FaNotesMedical } from 'react-icons/fa';
+import { FaArrowLeft, FaPills, FaExclamationCircle, FaPlusCircle, FaTimes, FaPrint, FaHistory, FaNotesMedical, FaRobot, FaLightbulb } from 'react-icons/fa';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion'; // Add this import
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-
+import AIAssistant from '../components/ui/AIAssistant';
 
 const API_URL = import.meta.env.VITE_API_URL;
-
 
 const PatientProfile: React.FC = () => {
   const [medications, setMedications] = useState<any[]>([{ id: 1, name: 'Amoxicillin', dosage: '250mg', frequency: 'Once daily', duration: '7 days' }]);
@@ -17,17 +16,11 @@ const PatientProfile: React.FC = () => {
   const [doctorComments, setDoctorComments] = useState('');
   const [prescriptionHistory, setPrescriptionHistory] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-
-  
   const navigate = useNavigate();
   const location = useLocation();
   const patient = location.state?.patient;
   const [isLoadingPatient, setIsLoadingPatient] = useState(true);
-
-
-  if (!patient) {
-    return <div>No patient data found. Please scan again.</div>;
-  }
+  const patientId = patient?.id;
 
   const handleAddMedication = () => {
     const newMed = {
@@ -39,6 +32,7 @@ const PatientProfile: React.FC = () => {
     };
     setMedications([...medications, newMed]);
   };
+  
 
   const handleRemoveMedication = (id: number) => {
     setMedications(medications.filter((med) => med.id !== id));
@@ -132,6 +126,8 @@ const PatientProfile: React.FC = () => {
   }
 };
 
+  
+
   // Add this after your other function declarations
   useEffect(() => {
     // Simulate loading patient data
@@ -213,6 +209,10 @@ const fetchPrescriptionHistory = async () => {
           </div>
         </motion.div>
 
+
+        {/* AI Assistant Component */}
+        {patientId && <AIAssistant patientId={patientId} apiUrl={API_URL} />}
+
         {/* New Prescription Form Card */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
@@ -264,14 +264,14 @@ const fetchPrescriptionHistory = async () => {
                   transition={{ duration: 0.5, delay: 0.4 }}
                   className="mt-8 bg-white shadow-md rounded-xl overflow-hidden border border-gray-100"
                 >
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 border-b border-blue-200">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3 border-b border-blue-200">
                     <div className="flex items-center">
                       <FaHistory className="text-2xl text-blue-600 mr-3" />
                       <h3 className="text-xl font-semibold text-gray-800">Medical History</h3>
                     </div>
                   </div>
                   
-                  <div className="h-80 overflow-y-auto px-4 scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-gray-100">
+                  <div className="h-100 overflow-y-auto px-4 scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-gray-100">
                     <AnimatePresence>
                       {isLoadingHistory ? (
                         <div className="py-8 flex justify-center items-center h-full">
@@ -393,7 +393,7 @@ const fetchPrescriptionHistory = async () => {
                     </div>
                     <textarea
                       placeholder="Enter patient's current status and condition details..."
-                      className="w-full p-4 text-lg border rounded-xl focus:ring-2 focus:ring-blue-600 min-h-[100px] resize-y"
+                      className="w-full p-4 text-lg border rounded-xl focus:ring-2 focus:ring-blue-600 min-h-[150px] resize-y"
                       value={patientStatus}
                       onChange={(e) => setPatientStatus(e.target.value)}
                     />
@@ -407,7 +407,7 @@ const fetchPrescriptionHistory = async () => {
                     </div>
                     <textarea
                       placeholder="Enter your observations or instructions..."
-                      className="w-full p-4 text-lg border rounded-xl focus:ring-2 focus:ring-blue-600 min-h-[120px] resize-y"
+                      className="w-full p-4 text-lg border rounded-xl focus:ring-2 focus:ring-blue-600 min-h-[180px] resize-y"
                       value={doctorComments}
                       onChange={(e) => setDoctorComments(e.target.value)}
                     />
