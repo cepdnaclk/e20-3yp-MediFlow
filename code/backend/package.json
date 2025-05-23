@@ -6,8 +6,8 @@
     "start": "node src/index.js",
     "dev": "cross-env NODE_ENV=development nodemon src/index.js",
     "test": "set NODE_ENV=test&& jest --verbose --detectOpenHandles --forceExit",
-    "flush": "node src/utils/flushDb.js",
-    "seed": "node src/utils/masterSeeder.js"
+    "flush": "cross-env NODE_ENV=development node src/utils/flushDb.js",
+    "seed": "cross-env NODE_ENV=development node src/utils/masterSeeder.js"
   },
   "keywords": [],
   "author": "",
