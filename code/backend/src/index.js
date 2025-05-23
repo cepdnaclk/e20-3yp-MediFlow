@@ -18,6 +18,8 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/prescriptions", require("./routes/prescriptionRoutes"));
 app.use("/api/auto-dispense", require("./routes/autoDispenseRoutes"));
 app.use("/api/patients", require("./routes/patientRoutes"));
+app.use("/api/ai-assistance", require("./routes/aiRoutes"));
+
 
 module.exports = app;
 
