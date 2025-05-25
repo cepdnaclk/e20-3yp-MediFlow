@@ -8,7 +8,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class doctor_login_should_pass {
+public class admin_login_should_pass {
 
     WebDriver driver;
 
@@ -27,13 +27,13 @@ public class doctor_login_should_pass {
     @Test
     public void test_login_into_application() throws InterruptedException {
         Thread.sleep(2000);
-        driver.findElement(By.id("email")).sendKeys("doctor@example.com");
+        driver.findElement(By.id("email")).sendKeys("admin@example.com");
         driver.findElement(By.id("password")).sendKeys("password123");
 
         driver.findElement(By.id("submit")).click();
         Thread.sleep(2000);
         String actualText = driver.findElement(By.id("role-indicator")).getText();
-        String expectedText = "Doctor";
+        String expectedText = "Admin";
 
         Assert.assertEquals(actualText, expectedText);
     }

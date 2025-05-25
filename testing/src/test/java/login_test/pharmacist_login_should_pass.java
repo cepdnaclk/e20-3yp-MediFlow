@@ -16,7 +16,7 @@ public class pharmacist_login_should_pass {
     public void setUp() {
         driver = new ChromeDriver();
         driver.manage().window().maximize();
-        driver.get("http://localhost:5173/");
+        driver.get("https://mediflow.live/");
     }
 
     @AfterClass
