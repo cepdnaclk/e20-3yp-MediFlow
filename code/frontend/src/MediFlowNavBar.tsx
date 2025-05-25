@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, 
@@ -31,6 +31,8 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
   const [activeItem, setActiveItem] = useState('dashboard');
   const [isLogoAnimated, setIsLogoAnimated] = useState(true);
   const navigate = useNavigate();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   
   useEffect(() => {
     const handleScroll = () => {
@@ -43,6 +45,16 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
     
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Define role-specific menu items
@@ -203,18 +215,36 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
               </motion.div> */}
               
               {/* User Avatar */}
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center"
-              >
-                <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-indigo-100">
-                  <img src="/pharmacist.jpeg" alt="User" />
-                </div>
-                <div className="ml-2 hidden lg:block">
-                  <p className="text-sm font-medium text-gray-700">{userInfo.name}</p>
-                  <p className="text-xs text-gray-500">{userInfo.title}</p>
-                </div>
-              </motion.div>
+              <div className="relative" ref={dropdownRef}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center cursor-pointer"
+                  onClick={() => setDropdownOpen((open) => !open)}
+                >
+                  <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-indigo-100">
+                    <img src="/pharmacist.jpeg" alt="User" />
+                  </div>
+                  <div className="ml-2 hidden lg:block">
+                    <p className="text-sm font-medium text-gray-700">{userInfo.name}</p>
+                    <p className="text-xs text-gray-500">{userInfo.title}</p>
+                  </div>
+                </motion.div>
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50">
+                    <button
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        localStorage.removeItem('token');
+                        navigate('/login');
+                        window.location.reload(); 
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
             
             {/* Mobile Menu Button */}
@@ -337,9 +367,14 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                   <Button 
                     variant="outline" 
                     className="w-full flex items-center justify-center text-gray-700 hover:text-red-600 hover:border-red-200 hover:bg-red-50"
+                    onClick={() => {
+                    localStorage.removeItem('token');
+                    navigate('/login');
+                    window.location.reload();
+                    }}
                   >
                     <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
+                    Log Out
                   </Button>
                 </div>
               </div>
