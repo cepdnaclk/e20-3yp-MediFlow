@@ -32,7 +32,7 @@ const ProtectedRoute = ({ user, allowedRoles, children, redirectPath = "/login" 
         ? '/doc_dashboard' 
         : user.role === 'admin'
           ? '/admin_dashboard'
-          : '/pharm_dashboard';
+          : '/pharmacist_prescription';
     return <Navigate to={defaultPath} replace />;
   }
   
@@ -164,7 +164,7 @@ const AppContent = ({ user, setUser }) => {
                     ? '/doc_dashboard' 
                     : user.role === 'admin'
                       ? '/admin_dashboard'
-                      : '/pharm_dashboard'
+                      : '/pharmacist_prescription'
                 } /> 
               : <Navigate to="/login" />
           } 

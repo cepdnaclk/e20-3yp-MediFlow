@@ -130,7 +130,7 @@ const Login_window = ({ setUser }) => {
       if (user.role === "doctor") {
         navigate("/doc_dashboard");
       } else if (user.role === "pharmacist") {
-        navigate("/pharm_dashboard");
+        navigate("/pharmacist_prescription");
       } else if (user.role === "admin") {
         navigate("/admin_dashboard");
       } 
