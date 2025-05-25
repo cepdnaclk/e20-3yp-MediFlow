@@ -52,21 +52,21 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
       { id: 'scan_patients', label: 'Scan Patients', icon: Users },
       { id: 'appointments', label: 'Appointments', icon: Calendar },
       { id: 'records', label: 'Medical Records', icon: FileText },
-      { id: 'settings', label: 'Settings', icon: Settings },
+      // { id: 'settings', label: 'Settings', icon: Settings },
     ],
     pharmacist: [
       { id: 'pharm_dashboard', label: 'Dashboard', icon: BarChart2 },
       // { id: 'inventory', label: 'Inventory', icon: Package },
       { id: 'prescriptions', label: 'Prescriptions', icon: ClipboardList },
       // { id: 'medications', label: 'Medications', icon: Package },
-      { id: 'settings', label: 'Settings', icon: Settings },
+      // { id: 'settings', label: 'Settings', icon: Settings },
     ],
 
     admin: [
       { id: 'admin_dashboard', label: 'Dashboard', icon: BarChart2 },
       { id: 'user_management', label: 'Users', icon: UsersIcon },
       { id: 'roles', label: 'Roles', icon: Shield },
-      { id: 'settings', label: 'Settings', icon: Settings },
+      // { id: 'settings', label: 'Settings', icon: Settings },
     ]
   };
 
@@ -179,17 +179,17 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
             {/* Right Side Actions */}
             <div className="hidden md:flex items-center space-x-4">
               {/* Search */}
-              <div className="relative">
+              {/* <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
                   placeholder="Search..."
                   className="pl-9 pr-4 py-2 w-40 lg:w-56 h-9 text-sm rounded-full border-gray-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 transition-all duration-200"
                 />
-              </div>
+              </div> */}
               
               {/* Notifications */}
-              <motion.div
+              {/* <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="relative cursor-pointer"
@@ -200,7 +200,7 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                     {notifications}
                   </span>
                 )}
-              </motion.div>
+              </motion.div> */}
               
               {/* User Avatar */}
               <motion.div
