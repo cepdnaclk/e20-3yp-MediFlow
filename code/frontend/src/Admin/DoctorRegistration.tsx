@@ -22,8 +22,7 @@ const RegisterDoctor = () => {
     experience: '',
     hospitalAffiliation: '',
     username: '',
-    password: '',
-    confirmPassword: '',
+  
     availability: {
       monday: { available: false, startTime: '09:00', endTime: '17:00' },
       tuesday: { available: false, startTime: '09:00', endTime: '17:00' },
@@ -64,66 +63,90 @@ const RegisterDoctor = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  
+  setIsLoading(true);
+  setErrorMessage('');
+  setSuccessMessage('');
+  
+  try {
+    // Get the API URL from environment variable or use a default
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     
-    // Validate password match
-    if (formData.password !== formData.confirmPassword) {
-      setErrorMessage("Passwords do not match");
-      return;
+    // Prepare the data to send to your API
+    const dataToSend = {
+      username: formData.username,
+      email: formData.email,
+      // Explicitly set role to doctor
+      role: "doctor",
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      nic: formData.nic,
+      phone: formData.phone,
+      specialization: formData.specialization,
+      qualifications: formData.qualifications,
+      licenseNumber: formData.licenseNumber,
+      experience: formData.experience,
+      hospitalAffiliation: formData.hospitalAffiliation,
+      availability: formData.availability
+    };
+    
+    console.log("Sending doctor registration data:", dataToSend);
+    
+    // Get token from localStorage for authentication
+    const token = localStorage.getItem('token');
+    
+    // Make the actual API call
+    const response = await fetch(`${API_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
+      },
+      body: JSON.stringify(dataToSend)
+    });
+    
+    // Parse the response
+    const data = await response.json();
+    
+    // Check if the request was successful
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to register doctor');
     }
     
-    setIsLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
+    setSuccessMessage(`Dr. ${formData.firstName} ${formData.lastName} registered successfully! A temporary password has been sent to their email.`);
     
-    try {
-      // In a real application, you would send this data to your API
-      // const formDataToSend = new FormData();
-      // Object.keys(formData).forEach(key => {
-      //   if (key === 'availability') {
-      //     formDataToSend.append(key, JSON.stringify(formData[key]));
-      //   } else {
-      //     formDataToSend.append(key, formData[key]);
-      //   }
-      // });
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSuccessMessage(`Dr. ${formData.firstName} ${formData.lastName} registered successfully!`);
-      
-      // Reset the form
-      setFormData({
-        firstName: '',
-        lastName: '',
-        nic: '',
-        email: '',
-        phone: '',
-        specialization: '',
-        qualifications: '',
-        licenseNumber: '',
-        experience: '',
-        hospitalAffiliation: '',
-        username: '',
-        password: '',
-        confirmPassword: '',
-        availability: {
-          monday: { available: false, startTime: '09:00', endTime: '17:00' },
-          tuesday: { available: false, startTime: '09:00', endTime: '17:00' },
-          wednesday: { available: false, startTime: '09:00', endTime: '17:00' },
-          thursday: { available: false, startTime: '09:00', endTime: '17:00' },
-          friday: { available: false, startTime: '09:00', endTime: '17:00' },
-          saturday: { available: false, startTime: '09:00', endTime: '13:00' },
-          sunday: { available: false, startTime: '09:00', endTime: '13:00' }
-        }
-      });
-      setProfileImage(null);
-    } catch (error) {
-      setErrorMessage(error.message || 'An error occurred while registering the doctor');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    // Reset the form
+    setFormData({
+      firstName: '',
+      lastName: '',
+      nic: '',
+      email: '',
+      phone: '',
+      specialization: '',
+      qualifications: '',
+      licenseNumber: '',
+      experience: '',
+      hospitalAffiliation: '',
+      username: '',
+      availability: {
+        monday: { available: false, startTime: '09:00', endTime: '17:00' },
+        tuesday: { available: false, startTime: '09:00', endTime: '17:00' },
+        wednesday: { available: false, startTime: '09:00', endTime: '17:00' },
+        thursday: { available: false, startTime: '09:00', endTime: '17:00' },
+        friday: { available: false, startTime: '09:00', endTime: '17:00' },
+        saturday: { available: false, startTime: '09:00', endTime: '13:00' },
+        sunday: { available: false, startTime: '09:00', endTime: '13:00' }
+      }
+    });
+    setProfileImage(null);
+  } catch (error) {
+    console.error('Error registering doctor:', error);
+    setErrorMessage(error.message || 'An error occurred while registering the doctor');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-teal-50 py-8">
@@ -410,7 +433,7 @@ const RegisterDoctor = () => {
                 </div>
               </div>
               
-              {/* Account Credentials Section */}
+              {/* Account Credentials Section - modified */}
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">Account Credentials</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -428,35 +451,27 @@ const RegisterDoctor = () => {
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                     />
                   </div>
-                  <div></div>
                   <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                      Password<span className="text-red-500">*</span>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Address<span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="password"
-                      id="password"
-                      name="password"
-                      value={formData.password}
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
                       onChange={handleChange}
                       required
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                     />
                   </div>
-                  <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                      Confirm Password<span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="password"
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
-                    />
-                  </div>
+                </div>
+                
+                <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
+                  <p className="text-sm text-blue-700">
+                    <strong>Note:</strong> A temporary password will be automatically generated and sent to the doctor's email. 
+                    They will be required to change this password when they first log in.
+                  </p>
                 </div>
               </div>
 

@@ -17,13 +17,18 @@ import PatientRegistration from './Admin/PatientRegistration';
 import PharmacistRegistration from './Admin/PharmacistRegistration';
 import AdminRegistration from './Admin/AdminRegistration';
 import ProtectedRoute from './components/ProtectedRoutes';
+import ResetPassword from './ResetPassword';
+
+
 
 // AppContent component to access useLocation inside Router
 const AppContent = ({ user, setUser }) => {
   const location = useLocation();
   
-  // Don't show navbar on login pages
-  const hideNavbar = location.pathname === '/' || location.pathname === '/login';
+  // Don't show navbar on login pages and reset password page
+  const hideNavbar = location.pathname === '/' || 
+                     location.pathname === '/login' || 
+                     location.pathname === '/reset-password';
   
   return (
     <>
@@ -33,6 +38,9 @@ const AppContent = ({ user, setUser }) => {
       <Routes>
         <Route path="/" element={<Login_window setUser={setUser} />} />
         <Route path="/login" element={<Login_window setUser={setUser} />} />
+
+        <Route path="/reset-password" element={<ResetPassword />} />
+
 
         {/* Protected Pharmacist Routes */}
         <Route 

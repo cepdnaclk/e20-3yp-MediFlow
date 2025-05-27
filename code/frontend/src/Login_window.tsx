@@ -116,64 +116,74 @@ const Login_window = ({ setUser }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      // Send credentials to the backend auth endpoint
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
+  try {
+    // Send credentials to the backend auth endpoint
+    const response = await fetch(`${API_URL}/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password,
+      }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok) {
-        setError(data.message || "Login failed");
-        return;
-      }
-
-      // Extract token
-      const { token } = data;
-
-      // Store token in localStorage for future API requests
-      localStorage.setItem("token", token);
-
-      // Decode token to get user data (without validation - just for UI purposes)
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const decodedToken = JSON.parse(window.atob(base64));
-
-      // Create user object with data from token
-      const user = {
-        id: decodedToken.id,
-        role: decodedToken.role,
-        email: formData.email
-      };
-
-      // Set user in app state
-      setUser(user);
-      setError("");
-
-      // Redirect based on role
-      if (user.role === "doctor") {
-        navigate("/doc_dashboard");
-      } else if (user.role === "pharmacist") {
-        navigate("/pharm_dashboard");
-      } else if (user.role === "admin") {
-        navigate("/admin_dashboard");
-      } 
-
-    } catch (err) {
-      console.error("Error during login:", err);
-      setError("Server error. Try again later.");
+    if (!response.ok) {
+      setError(data.message || "Login failed");
+      return;
     }
-  };
+
+    // Extract token
+    const { token } = data;
+
+    // Store token in localStorage for future API requests
+    localStorage.setItem("token", token);
+    
+    // Store user data in localStorage
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    // Decode token to get user data (without validation - just for UI purposes)
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const decodedToken = JSON.parse(window.atob(base64));
+
+    // Create user object with data from token
+    const user = {
+      id: decodedToken.id,
+      role: decodedToken.role,
+      email: formData.email,
+      passwordResetRequired: data.user.passwordResetRequired
+    };
+
+    // Set user in app state
+    setUser(user);
+    setError("");
+
+    // IMPORTANT FIX: Check if password reset is required before redirecting to dashboard
+    if (data.user.passwordResetRequired) {
+      // Redirect to password reset page and return early
+      navigate('/reset-password');
+      return; // This prevents the role-based redirection from executing
+    }
+
+    // Only redirect to dashboard if password reset is not required
+    if (user.role === "doctor") {
+      navigate("/doc_dashboard");
+    } else if (user.role === "pharmacist") {
+      navigate("/pharm_dashboard");
+    } else if (user.role === "admin") {
+      navigate("/admin_dashboard");
+    }
+  } catch (err) {
+    console.error("Error during login:", err);
+    setError("Server error. Try again later.");
+  }
+};
 
   return (
     <div className="relative flex items-center justify-center w-full min-h-screen bg-black overflow-hidden">

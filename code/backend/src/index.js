@@ -7,6 +7,8 @@ const sequelize = process.env.NODE_ENV === 'test'
     : require('./config/db');
 require('./models/associations');
 const app = express();
+const passwordRoutes = require('./routes/passwordRoutes');
+
 
 // Middleware
 app.use(cors());
@@ -20,6 +22,8 @@ app.use("/api/patients", require("./routes/patientRoutes"));
 app.use("/api/ai-assistance", require("./routes/aiRoutes"));
 app.use("/api/medicines", require("./routes/medicineRoutes"));
 app.use("/api/dispensers", require("./routes/dispenser"));
+app.use('/api/password', passwordRoutes);
+
 
 module.exports = app;
 
