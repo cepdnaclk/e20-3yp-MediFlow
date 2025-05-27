@@ -5,7 +5,7 @@ const helmet = require("helmet");
 const sequelize = process.env.NODE_ENV === 'test'
     ? require('./tests/config/test-db.config')
     : require('./config/db');
-
+require('./models/associations');
 const app = express();
 
 // Middleware
@@ -16,10 +16,10 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/prescriptions", require("./routes/prescriptionRoutes"));
-app.use("/api/auto-dispense", require("./routes/autoDispenseRoutes"));
 app.use("/api/patients", require("./routes/patientRoutes"));
 app.use("/api/ai-assistance", require("./routes/aiRoutes"));
-
+app.use("/api/medicines", require("./routes/medicineRoutes"));
+app.use("/api/dispensers", require("./routes/dispenser"));
 
 module.exports = app;
 

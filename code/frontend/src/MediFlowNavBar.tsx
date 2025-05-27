@@ -71,7 +71,8 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
       // { id: 'inventory', label: 'Inventory', icon: Package },
       { id: 'prescriptions', label: 'Prescriptions', icon: ClipboardList },
       // { id: 'medications', label: 'Medications', icon: Package },
-      // { id: 'settings', label: 'Settings', icon: Settings },
+      { id: 'dispensers', label: 'Dispensers', icon: Package },
+      { id: 'settings', label: 'Settings', icon: Settings },
     ],
 
     admin: [
@@ -148,10 +149,12 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                         }
                         if (item.id === 'doc_dashboard') {
                           navigate('/doc_dashboard');
-
+                        }
                         if (item.id === 'admin_dashboard') {
                           navigate('/admin_dashboard');
                         }
+                        if (item.id === 'dispensers') {
+                          navigate('/dispensers');
                         }
                       }}
                       whileHover={{ scale: 1.05 }}
@@ -351,6 +354,9 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                             }
                             if (item.id === 'doc_dashboard') {
                               navigate('/doc_dashboard');
+                            }
+                            if (item.id === 'dispensers') {
+                              navigate('/dispensers');
                             }
                           }}
                           whileTap={{ scale: 0.98 }}

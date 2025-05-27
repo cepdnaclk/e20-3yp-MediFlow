@@ -7,7 +7,9 @@ import {
   FaChevronCircleRight,
   FaChevronCircleLeft,
 } from "react-icons/fa";
-const API_URL = import.meta.env.REACT_APP_API_URL;
+
+const API_URL = import.meta.env.VITE_API_URL;
+
 const PharmacistPrescription: React.FC = () => {
   // State for prescriptions queue
   const [prescriptions, setPrescriptions] = useState([]);
@@ -41,7 +43,7 @@ const PharmacistPrescription: React.FC = () => {
         };
 
         // Fetch prescriptions with authentication
-        const prescriptionsResponse = await fetch('${API_URL}/api/prescriptions', {
+        const prescriptionsResponse = await fetch(`${API_URL}/api/prescriptions`, {
           headers
         });
 
@@ -56,23 +58,29 @@ const PharmacistPrescription: React.FC = () => {
 
         // Extract the array from the response object
         const prescriptionsArray = prescriptionsData.prescriptions || [];
+        console.log('Prescriptions array:', prescriptionsArray);
 
-        // Fetch auto-dispense data with authentication
-        const autoDispenseResponse = await fetch('${API_URL}/api/auto-dispense', {
-          headers
-        });
+        // Fetch auto-dispense medicines from DynamoDB DispenserStatus
+        let autoDispenseMedicineIds = [];
+        try {
+          const dispenserResponse = await fetch(`${API_URL}/api/dispensers/available-medicines`, {
+            headers
+          });
 
-        if (autoDispenseResponse.status === 401 || autoDispenseResponse.status === 403) {
-          console.error('Authentication failed or access denied');
-          window.location.href = '/login';
-          return;
+          if (dispenserResponse.ok) {
+            const dispenserData = await dispenserResponse.json();
+            console.log('Auto-dispense medicines from DynamoDB:', dispenserData);
+            autoDispenseMedicineIds = dispenserData.autoDispenseMedicineIds || [];
+          } else {
+            console.log('Could not fetch auto-dispense medicines from DynamoDB, using fallback');
+            // Fallback: treat all medicines as manual dispense
+            autoDispenseMedicineIds = [];
+          }
+        } catch (dispenserError) {
+          console.log('Error fetching auto-dispense medicines:', dispenserError);
+          // Fallback: treat all medicines as manual dispense
+          autoDispenseMedicineIds = [];
         }
-
-        const autoDispenseData = await autoDispenseResponse.json();
-        console.log('Auto-dispense data:', autoDispenseData);
-
-        // Extract the array from the auto-dispense response object
-        const autoDispenseArray = autoDispenseData.autoDispense || [];
 
         // Set prescriptions with progress tracking
         const enhancedPrescriptions = prescriptionsArray.map(prescription => ({
@@ -85,7 +93,8 @@ const PharmacistPrescription: React.FC = () => {
 
         // If prescriptions exist, set up the first prescription
         if (enhancedPrescriptions.length > 0) {
-          loadPrescriptionData(enhancedPrescriptions[0], autoDispenseArray);
+          console.log('Loading first prescription:', enhancedPrescriptions[0]);
+          loadPrescriptionData(enhancedPrescriptions[0], autoDispenseMedicineIds);
         }
 
         setLoading(false);
@@ -98,9 +107,14 @@ const PharmacistPrescription: React.FC = () => {
     fetchPrescriptions();
   }, []);
 
-  // Load medication data for a specific prescription
-  const loadPrescriptionData = (prescription, autoDispenseArray) => {
-    if (!prescription || !prescription.medications) {
+  // Load medicine data for a specific prescription
+  const loadPrescriptionData = (prescription, autoDispenseMedicineIds) => {
+    console.log('Loading prescription data:', prescription);
+    console.log('Prescription medicines:', prescription.medicines);
+    console.log('Auto-dispense medicine IDs from dispensers:', autoDispenseMedicineIds);
+    
+    if (!prescription || !prescription.medicines || !Array.isArray(prescription.medicines)) {
+      console.log('No medicines found in prescription or medicines is not an array');
       setAutoDispenseMedicines([]);
       setManualDispenseMedicines([]);
       return;
@@ -109,19 +123,33 @@ const PharmacistPrescription: React.FC = () => {
     const autoDispense = [];
     const manualDispense = [];
 
-    // Categorize medications based on auto-dispense status
-    prescription.medications.forEach(medication => {
+    // Categorize medicines based on dispenser availability
+    prescription.medicines.forEach(medicine => {
+      console.log('Processing medicine:', medicine);
+      
+      // Handle different medicine ID fields (some have 'id', some have 'medicineId')
+      const medicineId = medicine.medicineId || medicine.id;
+      
       const enhancedMedication = {
-        ...medication,
+        ...medicine,
+        id: medicineId, // Ensure we have a consistent ID field
         completed: false
       };
 
-      if (autoDispenseArray.some(entry => entry.medicationIds.includes(medication.id))) {
+      // Check if this medicine is available in auto-dispensers
+      const isAutoDispenseMedicine = autoDispenseMedicineIds.includes(medicineId);
+
+      if (isAutoDispenseMedicine) {
         autoDispense.push(enhancedMedication);
+        console.log('Added to auto dispense (available in dispenser):', enhancedMedication);
       } else {
         manualDispense.push(enhancedMedication);
+        console.log('Added to manual dispense (not in dispenser):', enhancedMedication);
       }
     });
+
+    console.log('Final auto dispense medicines:', autoDispense);
+    console.log('Final manual dispense medicines:', manualDispense);
 
     setAutoDispenseMedicines(autoDispense);
     setManualDispenseMedicines(manualDispense);
@@ -140,21 +168,27 @@ const PharmacistPrescription: React.FC = () => {
       const nextIndex = currentPrescriptionIndex + 1;
       setCurrentPrescriptionIndex(nextIndex);
 
-      // Get auto-dispense data (in a real app, you'd fetch this again if needed)
+      // Get auto-dispense medicines from DynamoDB
       const token = localStorage.getItem('token');
-      fetch('${API_URL}/api/auto-dispense', {
+      fetch(`${API_URL}/api/dispensers/available-medicines`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         }
       })
-        .then(res => res.json())
+        .then(res => {
+          if (res.ok) {
+            return res.json();
+          }
+          throw new Error('Could not fetch auto-dispense medicines');
+        })
         .then(data => {
-          const autoDispenseArray = data.autoDispense || [];
-          loadPrescriptionData(prescriptions[nextIndex], autoDispenseArray);
+          const autoDispenseMedicineIds = data.autoDispenseMedicineIds || [];
+          loadPrescriptionData(prescriptions[nextIndex], autoDispenseMedicineIds);
         })
         .catch(error => {
-          console.error('Error fetching auto-dispense data:', error);
+          console.log('Error fetching auto-dispense medicines:', error);
+          loadPrescriptionData(prescriptions[nextIndex], []);
         });
     }
   };
@@ -165,21 +199,27 @@ const PharmacistPrescription: React.FC = () => {
       const prevIndex = currentPrescriptionIndex - 1;
       setCurrentPrescriptionIndex(prevIndex);
 
-      // Get auto-dispense data
+      // Get auto-dispense medicines from DynamoDB
       const token = localStorage.getItem('token');
-      fetch('${API_URL}/api/auto-dispense', {
+      fetch(`${API_URL}/api/dispensers/available-medicines`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         }
       })
-        .then(res => res.json())
+        .then(res => {
+          if (res.ok) {
+            return res.json();
+          }
+          throw new Error('Could not fetch auto-dispense medicines');
+        })
         .then(data => {
-          const autoDispenseArray = data.autoDispense || [];
-          loadPrescriptionData(prescriptions[prevIndex], autoDispenseArray);
+          const autoDispenseMedicineIds = data.autoDispenseMedicineIds || [];
+          loadPrescriptionData(prescriptions[prevIndex], autoDispenseMedicineIds);
         })
         .catch(error => {
-          console.error('Error fetching auto-dispense data:', error);
+          console.log('Error fetching auto-dispense medicines:', error);
+          loadPrescriptionData(prescriptions[prevIndex], []);
         });
     }
   };
@@ -194,15 +234,15 @@ const PharmacistPrescription: React.FC = () => {
         return;
       }
 
-      // Extract medications that need to be dispensed with their quantities
-      const medicationsToDispense = autoDispenseMedicines.map(med => ({
+      // Extract medicines that need to be dispensed with their quantities
+      const medicinesToDispense = autoDispenseMedicines.map(med => ({
         id: med.id,
         name: med.name,
         quantity: med.quantity || 1 // Default to 1 if not specified
       }));
 
       // Send request to backend to trigger individual dispensers via AWS IoT MQTT
-      const response = await fetch('${API_URL}/api/auto-dispense/trigger', {
+      const response = await fetch(`${API_URL}/api/dispensers/trigger`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +250,7 @@ const PharmacistPrescription: React.FC = () => {
         },
         body: JSON.stringify({
           prescriptionId: currentPrescription.id,
-          medications: medicationsToDispense
+          medicines: medicinesToDispense
         })
       });
 
@@ -218,14 +258,16 @@ const PharmacistPrescription: React.FC = () => {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to trigger dispensers');
       }
+      
       const responseData = await response.json();
       console.log(responseData.message);
-      //After successful API call, update UI state
+      
+      // After successful API call, update UI state
       setAutoDispenseMedicines((prev) =>
         prev.map((med) => ({ ...med, completed: true }))
       );
 
-      //Update prescription progress
+      // Update prescription progress
       updatePrescriptionProgress();
 
     } catch (error) {
@@ -260,7 +302,7 @@ const PharmacistPrescription: React.FC = () => {
     setPrescriptions(updatedPrescriptions);
   };
 
-  // Check if all medications in current prescription are completed
+  // Check if all medicines in current prescription are completed
   const allMedicationsCompleted = () => {
     const autoCompleted = autoDispenseMedicines.every(med => med.completed);
     const manualCompleted = manualDispenseMedicines.every(med => med.completed);
@@ -339,8 +381,8 @@ const PharmacistPrescription: React.FC = () => {
               </div>
               <div className="flex items-center mt-2">
                 <div
-                id="prescription-id" 
-                className="text-3xl font-bold text-blue-600 mr-3">
+                  id="prescription-id" 
+                  className="text-3xl font-bold text-blue-600 mr-3">
                   ID: {currentPrescription.id || 'N/A'}
                 </div>
                 {currentPrescription.patientName && (
@@ -377,7 +419,7 @@ const PharmacistPrescription: React.FC = () => {
           </div>
           {autoDispenseMedicines.length === 0 ? (
             <div className="text-lg text-gray-600 py-4">
-              No automatic dispense medications for this prescription
+              No automatic dispense medicines for this prescription
             </div>
           ) : (
             <div className="space-y-6">
@@ -423,7 +465,7 @@ const PharmacistPrescription: React.FC = () => {
           </div>
           {manualDispenseMedicines.length === 0 ? (
             <div className="text-lg text-gray-600 py-4">
-              No manual dispense medications for this prescription
+              No manual dispense medicines for this prescription
             </div>
           ) : (
             <div className="space-y-6">

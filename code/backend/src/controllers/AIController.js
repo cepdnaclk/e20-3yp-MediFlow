@@ -31,7 +31,7 @@ exports.getAIResponse = async (req, res) => {
       - ID: ${prescriptionData.patientId}
       - Age: ${prescriptionData.age}
       - Gender: ${patientData.gender}
-      - Medication: ${JSON.stringify(prescriptionData.medications)}
+      - Medicine: ${JSON.stringify(prescriptionData.medicines)}
       - Allergies: ${JSON.stringify(prescriptionData.allergies)}
       - Current Symptoms: ${prescriptionData.patientStatus}
       - Doctor's Comment: ${prescriptionData.doctorComments}

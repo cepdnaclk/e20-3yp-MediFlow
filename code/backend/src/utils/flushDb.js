@@ -2,7 +2,9 @@ const sequelize = require('../config/db');
 const User = require('../models/User');
 const Prescription = require('../models/Prescription');
 const Patients = require('../models/Patient');
-const AutoDispense = require('../models/autoDispense');
+const Medicine = require('../models/Medicine');
+
+require('../models/associations');
 
 async function flushDb() {
     try {

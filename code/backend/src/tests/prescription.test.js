@@ -58,7 +58,7 @@ describe("Prescription API Tests", () => {
                 allergies: ["None"],
                 diagnosis: "Test Diagnosis",
                 prescriptionDate: new Date().toISOString().split('T')[0],
-                medications: [
+                medicines: [
                     {
                         id: 1,
                         name: "Test Medicine",
@@ -110,7 +110,7 @@ describe("Prescription API Tests", () => {
     //             allergies: ["None"],
     //             diagnosis: "Test Diagnosis",
     //             prescriptionDate: new Date().toISOString().split('T')[0],
-    //             medications: [
+    //             medicines: [
     //                 {
     //                     id: 1,
     //                     name: "Test Medicine",
