@@ -3,7 +3,7 @@ const sequelize = require("../config/db");
 
 const Prescription = sequelize.define("Prescription", {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    patientId: { type: DataTypes.STRING, allowNull: false },
+    patientId: { type: DataTypes.UUID, allowNull: false },
     patientName: { type: DataTypes.STRING, allowNull: false },
     age: { type: DataTypes.INTEGER },
     doctorId: { type: DataTypes.UUID, allowNull: false },
@@ -11,23 +11,23 @@ const Prescription = sequelize.define("Prescription", {
         type: DataTypes.JSON,
         defaultValue: [],
     },
-    patientStatus: { 
-    type: DataTypes.STRING,
-    allowNull: true
+    patientStatus: {
+        type: DataTypes.STRING,
+        allowNull: true
     },
-    doctorComments: { 
+    doctorComments: {
         type: DataTypes.TEXT,
-        allowNull: true 
+        allowNull: true
     },
     diagnosis: { type: DataTypes.STRING },
     prescriptionDate: { type: DataTypes.STRING },
-    medications: {
+    medicines: {
         type: DataTypes.JSON,
         allowNull: false,
         validate: {
-            isMedicationList(value) {
+            ismedicineList(value) {
                 if (!Array.isArray(value) || value.length === 0) {
-                    throw new Error('Medications must be a non-empty array');
+                    throw new Error('medicines must be a non-empty array');
                 }
             }
         }

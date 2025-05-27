@@ -21,25 +21,31 @@ async function runAllSeeders() {
 
   //Run flushDb.js 
   const flushSuccess = await runSeeder('src/utils/flushDb.js');
-    if (!flushSuccess) {
-        console.error('⛔ Failed to flush database. Aborting further seeding.');
-        return;
-    }
-  
+  if (!flushSuccess) {
+    console.error('⛔ Failed to flush database. Aborting further seeding.');
+    return;
+  }
+
   // Run userSeeder.js first (users)
   const usersSuccess = await runSeeder('src/utils/userSeeder.js');
   if (!usersSuccess) {
     console.error('⛔ Failed to seed users. Aborting further seeding.');
     return;
   }
-  
-  // Run patientSeeder.js second
+
+  const medicinesSuccess = await runSeeder('src/utils/medicineSeeder.js');
+  if (!medicinesSuccess) {
+    console.error('⛔ Failed to seed medicines. Aborting further seeding.');
+    return;
+  }
+
+  // Run patientSeeder.js 
   const patientsSuccess = await runSeeder('src/utils/patientSeeder.js');
   if (!patientsSuccess) {
     console.error('⛔ Failed to seed patients. Aborting further seeding.');
     return;
   }
-  
+
   // Run prescriptionSeeder.js last
   const prescriptionsSuccess = await runSeeder('src/utils/prescriptionSeeder.js');
   if (!prescriptionsSuccess) {
@@ -47,13 +53,6 @@ async function runAllSeeders() {
     return;
   }
 
-  // Run autoDispenseSeeder.js last
-  const autoDispenseSuccess = await runSeeder('src/utils/autoDispenseSeeder.js');
-  if (!autoDispenseSuccess) {
-  console.error('⛔ Failed to seed auto-dispense data.');
-  return;
-  }
-  
   console.log('\n✅ All database seeding completed successfully!');
 }
 

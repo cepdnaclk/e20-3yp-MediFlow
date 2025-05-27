@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import React from 'react';
-import DispenserDashboard from './Pharmacist/DispenserDashboard.js';
+import PharmacistDashboard from './Pharmacist/PharmacistDashboard.js';
+import DispenserDashboard from './Pharmacist/DispenserDashboard';
 import Login_window from './Login_window.js';
 import MediFlowNavbar from './MediFlowNavBar.js';
 import RFIDScanPage from './Doctor/Rfid_scan.js';
@@ -66,7 +67,7 @@ const AppContent = ({ user, setUser }) => {
           path="/pharm_dashboard" 
           element={
             <ProtectedRoute user={user} allowedRoles={['pharmacist']}>
-              <DispenserDashboard />
+              <PharmacistDashboard />
             </ProtectedRoute>
           } 
         />
@@ -167,6 +168,14 @@ const AppContent = ({ user, setUser }) => {
                       : '/pharmacist_prescription'
                 } /> 
               : <Navigate to="/login" />
+          } 
+        />
+        <Route 
+          path="/dispensers" 
+          element={
+            <ProtectedRoute user={user} allowedRoles={['pharmacist']}>
+              <DispenserDashboard />
+            </ProtectedRoute>
           } 
         />
       </Routes>

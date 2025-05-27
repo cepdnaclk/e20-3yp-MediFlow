@@ -7,15 +7,17 @@
 #include <PubSubClient.h>
 #include "certs/certificates.h"
 
-const char *ssid = "";
-const char *password = "";
+const char *ssid = "Dialog 4G 339";
+const char *password = "BA7714aF";
 
 // AWS IoT Core Configuration
-#define AWS_IOT_ENDPOINT "aelh7uratdfcb-ats.iot.eu-north-1.amazonaws.com"
+#define AWS_IOT_ENDPOINT "aelh7uratdfcb-ats.iot.us-east-1.amazonaws.com"
 #define AWS_IOT_PORT 8883
 #define CLIENT_ID "MediFlow_ESP32_1"
-#define SUBSCRIBE_TOPIC "mediflow/dispenser/1/command"
-#define PUBLISH_TOPIC "mediflow/dispenser/1/status"
+#define THING_NAME "Dispenser_A"
+#define SUBSCRIBE_TOPIC "mediflow/" THING_NAME "/command"
+#define PUBLISH_TOPIC "mediflow/" THING_NAME "/status"
+#define PUBLISH_TOPIC_HEALTH "mediflow/" THING_NAME "/health"
 
 // MQTT and WiFiClientSecure setup
 WiFiClientSecure wifiClient;
@@ -24,6 +26,8 @@ PubSubClient mqttClient(wifiClient);
 // Function prototypes
 void connectToAWS();
 void messageHandler(char *topic, byte *payload, unsigned int length);
+
+unsigned long lastHealthPublish = 0;
 
 #define DHTPIN 4
 #define DHTTYPE DHT11
@@ -89,9 +93,14 @@ void connectToAWS()
 
   while (!mqttClient.connected())
   {
-    if (mqttClient.connect(CLIENT_ID))
+    const char* lwtMessage = "{\"status\":\"offline\"}";
+    if (mqttClient.connect(CLIENT_ID, PUBLISH_TOPIC_HEALTH, 0, true, lwtMessage))
     {
       Serial.println("Connected to AWS IoT");
+      // Publish initial status
+      char msg[64];
+      sprintf(msg, "{\"status\":\"%s\"}", "online");
+      mqttClient.publish(PUBLISH_TOPIC_HEALTH, msg);
 
       // Subscribe to the command topic
       if (mqttClient.subscribe(SUBSCRIBE_TOPIC))
@@ -220,17 +229,20 @@ void loop()
     stopMotor();
   }
 
-  float temperature = dht.readTemperature();
-  if (!isnan(temperature))
-  {
-    char temperatureStr[10];
-    dtostrf(temperature, 1, 2, temperatureStr);
-
+  unsigned long currentMillis = millis();
+  if (currentMillis - lastHealthPublish >= 30000) {
+    float temperature = dht.readTemperature();
+    
     // Publish temperature data
     char msg[128];
-    sprintf(msg, "{\"temperature\":%.2f}", temperature);
-    mqttClient.publish(PUBLISH_TOPIC "/temperature", msg);
+    if (isnan(temperature)) {
+      sprintf(msg, "{\"status\":\"%s\", \"temperature\":null}", "online");
+    } else {
+      sprintf(msg, "{\"status\":\"%s\", \"temperature\":%.2f}", "online", temperature);
+    }
+    mqttClient.publish(PUBLISH_TOPIC_HEALTH, msg);
+    
+    lastHealthPublish = currentMillis;
   }
-
   delay(100);
 }
