@@ -15,6 +15,40 @@ const Login_window = ({ setUser }) => {
   const [strings, setStrings] = useState([]);
   const [particles, setParticles] = useState([]);
 
+
+  // Check if user is already logged in - ADD THIS EFFECT
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        // Decode token to get user role
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const decodedToken = JSON.parse(window.atob(base64));
+        
+        // Redirect based on role
+        if (decodedToken.role === "doctor") {
+          navigate("/doc_dashboard");
+        } else if (decodedToken.role === "pharmacist") {
+          navigate("/pharm_dashboard");
+        } else if (decodedToken.role === "admin") {
+          navigate("/admin_dashboard");
+        }
+        
+        // Also update the app state
+        const user = {
+          id: decodedToken.id,
+          role: decodedToken.role
+        };
+        setUser(user);
+      } catch (error) {
+        // If token is invalid, remove it
+        localStorage.removeItem('token');
+        console.error("Invalid token:", error);
+      }
+    }
+  }, [navigate, setUser]);
+
   // Generate random curved strings across the screen
   useEffect(() => {
     const generatedStrings = [];
@@ -130,7 +164,7 @@ const Login_window = ({ setUser }) => {
       if (user.role === "doctor") {
         navigate("/doc_dashboard");
       } else if (user.role === "pharmacist") {
-        navigate("/pharmacist_prescription");
+        navigate("/pharm_dashboard");
       } else if (user.role === "admin") {
         navigate("/admin_dashboard");
       } 
@@ -184,7 +218,7 @@ const Login_window = ({ setUser }) => {
       </svg>
       
       {/* Login box */}
-      <div className="z-10 w-120  bg-opacity-5 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-purple-200 border-opacity-10">
+      <div className="z-10 w-100  bg-opacity-5 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-purple-200 border-opacity-10">
         <div className="flex items-center mb-6 justify-center">
           <div className="mr-4 bg-purple-900 bg-opacity-10 p-2 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-15 w-15 text-blue-300" viewBox="0 0 20 20" fill="currentColor">

@@ -15,7 +15,8 @@ import {
   ClipboardList,
   Activity,
   Shield,
-  UsersIcon
+  UsersIcon,
+  AlertTriangle
 } from 'lucide-react';
 import { Avatar } from '@radix-ui/react-avatar';
 import { Button } from './components/ui/button.js';
@@ -33,6 +34,7 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   
   useEffect(() => {
     const handleScroll = () => {
@@ -56,6 +58,13 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+    window.location.reload();
+  };
 
   // Define role-specific menu items
   const menuItemsByRole = {
@@ -217,7 +226,7 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                 )}
               </motion.div> */}
               
-              {/* User Avatar */}
+              {/* User Avatar with Enhanced Menu */}
               <div className="relative" ref={dropdownRef}>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
@@ -232,21 +241,45 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                     <p className="text-xs text-gray-500">{userInfo.title}</p>
                   </div>
                 </motion.div>
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50">
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        localStorage.removeItem('token');
-                        navigate('/login');
-                        window.location.reload(); 
-                      }}
+                
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <motion.div
+                      className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50"
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      Logout
-                    </button>
-                  </div>
-                )}
+                      
+                      
+                      <div className="py-1">
+                        <button
+                          className="group w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 transition-all duration-200"
+                          onClick={() => {
+                            setDropdownOpen(false);
+                            setShowLogoutConfirmation(true);
+                          }}
+                        >
+                          <div className="mr-3 p-1.5 rounded-full bg-red-50 group-hover:bg-red-100 transition-all duration-200">
+                            <LogOut className="w-4 h-4 text-red-500" />
+                          </div>
+                          <span className="group-hover:text-red-600 transition-colors duration-200">Sign out</span>
+                          <motion.div 
+                            className="ml-auto opacity-0 group-hover:opacity-100"
+                            initial={{ x: -5 }}
+                            animate={{ x: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-red-500">
+                              <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </motion.div>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
             
@@ -322,9 +355,11 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                   <div className={`mt-3 px-3 py-1 rounded-full text-xs font-medium inline-block ${
                     userRole === 'doctor' 
                       ? 'bg-blue-100 text-blue-800' 
-                      : 'bg-purple-100 text-purple-800'
+                      : userRole === 'admin'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-purple-100 text-purple-800'
                   }`}>
-                    {userRole === 'doctor' ? 'Doctor' : 'Pharmacist'}
+                    {userRole === 'doctor' ? 'Doctor' : userRole === 'admin' ? 'Admin' : 'Pharmacist'}
                   </div>
                 </div>
                 
@@ -374,13 +409,84 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                     variant="outline" 
                     className="w-full flex items-center justify-center text-gray-700 hover:text-red-600 hover:border-red-200 hover:bg-red-50"
                     onClick={() => {
-                    localStorage.removeItem('token');
-                    navigate('/login');
-                    window.location.reload();
+                      setIsMobileMenuOpen(false);
+                      setShowLogoutConfirmation(true);
                     }}
                   >
                     <LogOut className="w-4 h-4 mr-2" />
                     Log Out
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Enhanced Logout Confirmation Dialog */}
+      <AnimatePresence>
+        {showLogoutConfirmation && (
+          <motion.div 
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowLogoutConfirmation(false)}
+          >
+            <motion.div 
+              className="bg-white rounded-2xl shadow-2xl w-80 overflow-hidden"
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-red-600/20 h-24"></div>
+                <div className="relative pt-12 px-5 flex justify-center">
+                  <motion.div 
+                    className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center"
+                    initial={{ y: 20 }}
+                    animate={{ y: 0 }}
+                    transition={{ delay: 0.1, type: 'spring' }}
+                  >
+                    <motion.div 
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                      <LogOut className="h-8 w-8 text-red-500" />
+                    </motion.div>
+                  </motion.div>
+                </div>
+              </div>
+              
+              <div className="p-5 pt-8">
+                <h3 className="text-xl font-semibold text-center text-gray-900 mb-2">
+                  Ready to leave?
+                </h3>
+                <p className="text-sm text-gray-600 text-center mb-6">
+                  You'll need to sign in again to access your MediFlow account.
+                </p>
+                <div className="flex flex-col space-y-3">
+                  <Button 
+                    className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
+                    onClick={handleLogout}
+                  >
+                    <motion.div 
+                      className="flex items-center justify-center w-full"
+                      whileHover={{ x: 5 }}
+                      transition={{ type: 'spring', stiffness: 400 }}
+                    >
+                      Sign Out
+                      <LogOut className="w-4 h-4 ml-2" />
+                    </motion.div>
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="w-full border-gray-200 text-gray-700 hover:bg-gray-50"
+                    onClick={() => setShowLogoutConfirmation(false)}
+                  >
+                    Cancel
                   </Button>
                 </div>
               </div>

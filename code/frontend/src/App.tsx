@@ -16,30 +16,7 @@ import DoctorRegistration from './Admin/DoctorRegistration';
 import PatientRegistration from './Admin/PatientRegistration';
 import PharmacistRegistration from './Admin/PharmacistRegistration';
 import AdminRegistration from './Admin/AdminRegistration';
-
-
-// Role-based route protection component
-const ProtectedRoute = ({ user, allowedRoles, children, redirectPath = "/login" }) => {
-  // If user isn't logged in, redirect to login
-  if (!user) {
-    return <Navigate to={redirectPath} replace />;
-  }
-  
-  // If user's role isn't in the allowed roles, redirect to their dashboard
-  if (!allowedRoles.includes(user.role)) {
-    // Redirect doctor to doc_dashboard, pharmacist to pharm_dashboard, and admin to admin_dashboard
-    const defaultPath = 
-      user.role === 'doctor' 
-        ? '/doc_dashboard' 
-        : user.role === 'admin'
-          ? '/admin_dashboard'
-          : '/pharmacist_prescription';
-    return <Navigate to={defaultPath} replace />;
-  }
-  
-  // User is authenticated and authorized
-  return children;
-};
+import ProtectedRoute from './components/ProtectedRoutes';
 
 // AppContent component to access useLocation inside Router
 const AppContent = ({ user, setUser }) => {
@@ -47,11 +24,6 @@ const AppContent = ({ user, setUser }) => {
   
   // Don't show navbar on login pages
   const hideNavbar = location.pathname === '/' || location.pathname === '/login';
-  
-  // Define role-specific route access
-  const doctorRoutes = ['doc_dashboard', 'profile', 'scan'];
-  const pharmacistRoutes = ['pharm_dashboard', 'pharmacist_prescription'];
-  const adminRoutes = ['admin_dashboard', 'user_management'];
   
   return (
     <>
@@ -66,7 +38,7 @@ const AppContent = ({ user, setUser }) => {
         <Route 
           path="/pharm_dashboard" 
           element={
-            <ProtectedRoute user={user} allowedRoles={['pharmacist']}>
+            <ProtectedRoute allowedRoles={['pharmacist']}>
               <PharmacistDashboard />
             </ProtectedRoute>
           } 
@@ -74,7 +46,7 @@ const AppContent = ({ user, setUser }) => {
         <Route 
           path="/pharmacist_prescription" 
           element={
-            <ProtectedRoute user={user} allowedRoles={['pharmacist']}>
+            <ProtectedRoute allowedRoles={['pharmacist']}>
               <PharmacistPrescription />
             </ProtectedRoute>
           } 
@@ -84,7 +56,7 @@ const AppContent = ({ user, setUser }) => {
         <Route 
           path="/doc_dashboard" 
           element={
-            <ProtectedRoute user={user} allowedRoles={['doctor']}>
+            <ProtectedRoute allowedRoles={['doctor']}>
               <>
                 <DoctorDashboardHeader user={user} />
                 <PatientRecords />
@@ -95,7 +67,7 @@ const AppContent = ({ user, setUser }) => {
         <Route 
           path="/profile" 
           element={
-            <ProtectedRoute user={user} allowedRoles={['doctor']}>
+            <ProtectedRoute allowedRoles={['doctor']}>
               <PatientProfile />
             </ProtectedRoute>
           } 
@@ -103,7 +75,7 @@ const AppContent = ({ user, setUser }) => {
         <Route 
           path="/scan" 
           element={
-            <ProtectedRoute user={user} allowedRoles={['doctor']}>
+            <ProtectedRoute allowedRoles={['doctor']}>
               <RFIDScanPage />
             </ProtectedRoute>
           } 
@@ -113,47 +85,47 @@ const AppContent = ({ user, setUser }) => {
         <Route 
           path="/admin_dashboard" 
           element={
-            <ProtectedRoute user={user} allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={['admin']}>
               <AdminDashboard />
             </ProtectedRoute>
           } 
         />
 
         <Route 
-            path="/admin/register-patient" 
-            element={
-              <ProtectedRoute user={user} allowedRoles={['admin']}>
-                <PatientRegistration />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/admin/register-doctor" 
-            element={
-              <ProtectedRoute user={user} allowedRoles={['admin']}>
-                <DoctorRegistration />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/admin/register-pharmacist" 
-            element={
-              <ProtectedRoute user={user} allowedRoles={['admin']}>
-                <PharmacistRegistration />
-              </ProtectedRoute>
-            } 
-          />
+          path="/admin/register-patient" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <PatientRegistration />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/admin/register-doctor" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <DoctorRegistration />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/admin/register-pharmacist" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <PharmacistRegistration />
+            </ProtectedRoute>
+          } 
+        />
 
-          <Route 
-            path="/admin/register-admin" 
-            element={
-              <ProtectedRoute user={user} allowedRoles={['admin']}>
-                <AdminRegistration />
-              </ProtectedRoute>
-            } 
-          />
+        <Route 
+          path="/admin/register-admin" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminRegistration />
+            </ProtectedRoute>
+          } 
+        />
         
         {/* 404 Not Found - catch-all route */}
         <Route 
@@ -165,7 +137,7 @@ const AppContent = ({ user, setUser }) => {
                     ? '/doc_dashboard' 
                     : user.role === 'admin'
                       ? '/admin_dashboard'
-                      : '/pharmacist_prescription'
+                      : '/pharm_dashboard'
                 } /> 
               : <Navigate to="/login" />
           } 
@@ -173,7 +145,7 @@ const AppContent = ({ user, setUser }) => {
         <Route 
           path="/dispensers" 
           element={
-            <ProtectedRoute user={user} allowedRoles={['pharmacist']}>
+            <ProtectedRoute allowedRoles={['pharmacist']}>
               <DispenserDashboard />
             </ProtectedRoute>
           } 

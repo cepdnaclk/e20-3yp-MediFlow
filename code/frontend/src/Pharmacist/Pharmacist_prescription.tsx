@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import React, { useState, useEffect } from "react";
 import {
   FaArrowLeft,
@@ -7,6 +8,7 @@ import {
   FaChevronCircleRight,
   FaChevronCircleLeft,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -17,9 +19,12 @@ const PharmacistPrescription: React.FC = () => {
   const [autoDispenseMedicines, setAutoDispenseMedicines] = useState([]);
   const [manualDispenseMedicines, setManualDispenseMedicines] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // Add this hook
+
 
   // Get current prescription
   const currentPrescription = prescriptions[currentPrescriptionIndex] || {};
+  
 
   // Fetch all prescriptions and set up the queue
   useEffect(() => {
@@ -326,18 +331,17 @@ const PharmacistPrescription: React.FC = () => {
           <div className="bg-white border-b mb-8">
             <div className="flex justify-between h-16 items-center">
               <div className="flex items-center space-x-4">
-                <button className="text-lg text-blue-600 font-semibold hover:text-blue-800">
+                <button 
+                  onClick={() => navigate('/pharm_dashboard')} // Add this onClick handler
+                  className="text-lg text-blue-600 font-semibold hover:text-blue-800"
+                >
                   <FaArrowLeft className="inline mr-2" /> Back
                 </button>
-                <h1 className="text-3xl font-bold text-gray-800">
+                <h1 className="text-3xl font-bold text-purple-800 ml-2">
                   Pharmacist Dashboard
                 </h1>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-base text-gray-600">
-                  Pharmacist ID: P789012
-                </span>
-              </div>
+
             </div>
           </div>
           <div className="bg-white shadow-lg rounded-xl p-8 mb-8">
@@ -353,21 +357,34 @@ const PharmacistPrescription: React.FC = () => {
   return (
     <div className="bg-gray-50 min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top Navigation */}
-        <div className="bg-white border-b mb-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center space-x-4">
-              <button className="text-lg text-blue-600 font-semibold hover:text-blue-800">
-                <FaArrowLeft className="inline mr-2" /> Back
-              </button>
-              <h1 className="text-3xl font-bold text-gray-800">
-                Pharmacist Dashboard
-              </h1>
+        {/* Top Navigation - Modern Redesign */}
+        <div className="bg-gradient-to-r from-white to-purple-50 rounded-xl shadow-md mb-8 overflow-hidden">
+          <div className="flex justify-between h-20 items-center px-6">
+            <div className="flex items-center space-x-5">
+              <motion.button 
+                onClick={() => navigate('/pharm_dashboard')}
+                className="group flex items-center space-x-2 text-indigo-600 font-medium bg-white px-4 py-2.5 rounded-lg shadow-sm hover:shadow transition-all duration-200"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <FaArrowLeft className="text-sm group-hover:-translate-x-1 transition-transform duration-200" />
+                <span>Back</span>
+              </motion.button>
+              
+              <div className="flex flex-col">
+                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-800 to-indigo-600 bg-clip-text text-transparent">
+                  Pharmacist Dashboard
+                </h1>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-base text-gray-600">
-                Pharmacist ID: P789012
-              </span>
+            
+            <div className="hidden md:flex items-center space-x-3">
+              <div className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                Pharmacy ID: PH-5721
+              </div>
+              <div className="h-8 w-8 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md">
+                <span className="text-sm font-bold">RX</span>
+              </div>
             </div>
           </div>
         </div>
@@ -382,7 +399,7 @@ const PharmacistPrescription: React.FC = () => {
               <div className="flex items-center mt-2">
                 <div
                   id="prescription-id" 
-                  className="text-3xl font-bold text-blue-600 mr-3">
+                  className="text-1xl font-bold text-blue-600 mr-3">
                   ID: {currentPrescription.id || 'N/A'}
                 </div>
                 {currentPrescription.patientName && (
