@@ -7,8 +7,8 @@
 #include <PubSubClient.h>
 #include "certs/certificates.h"
 
-const char *ssid = "Dialog 4G 339";
-const char *password = "BA7714aF";
+const char *ssid = "";
+const char *password = "";
 
 // AWS IoT Core Configuration
 #define AWS_IOT_ENDPOINT "aelh7uratdfcb-ats.iot.us-east-1.amazonaws.com"
