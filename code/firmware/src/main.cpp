@@ -94,7 +94,13 @@ void connectToAWS()
   while (!mqttClient.connected())
   {
     const char* lwtMessage = "{\"status\":\"offline\"}";
-    if (mqttClient.connect(CLIENT_ID, PUBLISH_TOPIC_HEALTH, 0, true, lwtMessage))
+    if (mqttClient.connect(
+        CLIENT_ID,
+        PUBLISH_TOPIC_HEALTH,
+        0,
+        false,
+        "{\"status\":\"offline\"}"
+      ))
     {
       Serial.println("Connected to AWS IoT");
       // Publish initial status
