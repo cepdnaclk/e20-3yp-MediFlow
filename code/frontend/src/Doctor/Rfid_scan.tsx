@@ -42,7 +42,7 @@ const RFIDScanPage: React.FC = () => {
 
       try {
         const token = localStorage.getItem('token');
-        const API_URL = 'http://localhost:5000'; 
+        const API_URL = import.meta.env.VITE_API_URL;
         console.log("UID sent to backend:", uid);
         const res = await fetch(
           `${API_URL}/api/patients/rfid/${uid}`,
