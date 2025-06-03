@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Save, UserPlus, AlertCircle, Upload, CreditCard, Calendar, Camera, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = import.meta.env.REACT_APP_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const RegisterPatient = () => {
   const navigate = useNavigate();
