@@ -87,7 +87,7 @@ const RegisterPatient = () => {
         formDataToSend.append('photo', fileInputRef.current.files[0]);
       }
       
-      const response = await fetch('${API_URL}/api/patients', {
+      const response = await fetch(`${API_URL}/api/patients`, {
         method: 'POST',
         headers: {
           // Don't set Content-Type when sending FormData
