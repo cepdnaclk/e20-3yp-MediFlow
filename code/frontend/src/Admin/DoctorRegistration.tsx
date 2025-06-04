@@ -23,15 +23,7 @@ const RegisterDoctor = () => {
     hospitalAffiliation: '',
     username: '',
   
-    availability: {
-      monday: { available: false, startTime: '09:00', endTime: '17:00' },
-      tuesday: { available: false, startTime: '09:00', endTime: '17:00' },
-      wednesday: { available: false, startTime: '09:00', endTime: '17:00' },
-      thursday: { available: false, startTime: '09:00', endTime: '17:00' },
-      friday: { available: false, startTime: '09:00', endTime: '17:00' },
-      saturday: { available: false, startTime: '09:00', endTime: '13:00' },
-      sunday: { available: false, startTime: '09:00', endTime: '13:00' }
-    }
+
   });
 
   const handleChange = (e) => {
@@ -42,18 +34,7 @@ const RegisterDoctor = () => {
     }));
   };
 
-  const handleAvailabilityChange = (day, field, value) => {
-    setFormData(prevState => ({
-      ...prevState,
-      availability: {
-        ...prevState.availability,
-        [day]: {
-          ...prevState.availability[day],
-          [field]: value
-        }
-      }
-    }));
-  };
+
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -88,7 +69,6 @@ const RegisterDoctor = () => {
       licenseNumber: formData.licenseNumber,
       experience: formData.experience,
       hospitalAffiliation: formData.hospitalAffiliation,
-      availability: formData.availability
     };
     
     console.log("Sending doctor registration data:", dataToSend);
@@ -129,15 +109,6 @@ const RegisterDoctor = () => {
       experience: '',
       hospitalAffiliation: '',
       username: '',
-      availability: {
-        monday: { available: false, startTime: '09:00', endTime: '17:00' },
-        tuesday: { available: false, startTime: '09:00', endTime: '17:00' },
-        wednesday: { available: false, startTime: '09:00', endTime: '17:00' },
-        thursday: { available: false, startTime: '09:00', endTime: '17:00' },
-        friday: { available: false, startTime: '09:00', endTime: '17:00' },
-        saturday: { available: false, startTime: '09:00', endTime: '13:00' },
-        sunday: { available: false, startTime: '09:00', endTime: '13:00' }
-      }
     });
     setProfileImage(null);
   } catch (error) {
@@ -390,48 +361,7 @@ const RegisterDoctor = () => {
                 </div>
               </div>
               
-              {/* Weekly Availability */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">Weekly Availability</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.keys(formData.availability).map(day => (
-                    <div key={day} className="p-4 border rounded-lg bg-gray-50">
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="font-medium text-gray-700 capitalize">{day}</label>
-                        <input
-                          type="checkbox"
-                          checked={formData.availability[day].available}
-                          onChange={(e) => handleAvailabilityChange(day, 'available', e.target.checked)}
-                          className="h-4 w-4 text-teal-600 rounded focus:ring-teal-500"
-                        />
-                      </div>
-                      
-                      <div className={`grid grid-cols-2 gap-2 ${formData.availability[day].available ? 'opacity-100' : 'opacity-50'}`}>
-                        <div>
-                          <label className="block text-xs text-gray-500 mb-1">Start Time</label>
-                          <input
-                            type="time"
-                            value={formData.availability[day].startTime}
-                            onChange={(e) => handleAvailabilityChange(day, 'startTime', e.target.value)}
-                            disabled={!formData.availability[day].available}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-500 mb-1">End Time</label>
-                          <input
-                            type="time"
-                            value={formData.availability[day].endTime}
-                            onChange={(e) => handleAvailabilityChange(day, 'endTime', e.target.value)}
-                            disabled={!formData.availability[day].available}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+ 
               
               {/* Account Credentials Section - modified */}
               <div className="space-y-6">
