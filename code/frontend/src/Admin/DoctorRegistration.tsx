@@ -68,7 +68,7 @@ const RegisterDoctor = () => {
       qualifications: formData.qualifications,
       licenseNumber: formData.licenseNumber,
       experience: formData.experience,
-      hospitalAffiliation: formData.hospitalAffiliation,
+      hospitalAffiliation: formData.hospitalAffiliation
     };
     
     console.log("Sending doctor registration data:", dataToSend);
@@ -108,7 +108,7 @@ const RegisterDoctor = () => {
       licenseNumber: '',
       experience: '',
       hospitalAffiliation: '',
-      username: '',
+      username: ''
     });
     setProfileImage(null);
   } catch (error) {
@@ -360,8 +360,6 @@ const RegisterDoctor = () => {
                   </div>
                 </div>
               </div>
-              
- 
               
               {/* Account Credentials Section - modified */}
               <div className="space-y-6">
