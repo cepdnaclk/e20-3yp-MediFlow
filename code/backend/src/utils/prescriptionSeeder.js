@@ -61,7 +61,7 @@ async function seedPrescriptions() {
           dosage: "500mg",
           frequency: "Three times daily",
           duration: "7 days",
-          quantity: 21
+          quantity: 5
         },
         {
           id: ibuprofen.id,
@@ -69,7 +69,7 @@ async function seedPrescriptions() {
           dosage: "400mg",
           frequency: "Twice daily",
           duration: "5 days",
-          quantity: 10
+          quantity: 7
         }
       ],
       [
@@ -79,7 +79,7 @@ async function seedPrescriptions() {
           dosage: "1000mg",
           frequency: "Twice daily",
           duration: "1 month",
-          quantity: 60
+          quantity: 6
         }
       ],
       [
@@ -89,7 +89,7 @@ async function seedPrescriptions() {
           dosage: "10mg",
           frequency: "Once daily",
           duration: "1 month",
-          quantity: 30
+          quantity: 8
         },
         {
           id: atorvastatin.id,
@@ -97,7 +97,7 @@ async function seedPrescriptions() {
           dosage: "20mg",
           frequency: "Once daily",
           duration: "1 month",
-          quantity: 30
+          quantity: 5
         }
       ],
       [
@@ -107,7 +107,7 @@ async function seedPrescriptions() {
           dosage: "10mg",
           frequency: "Once daily",
           duration: "3 days",
-          quantity: 3
+          quantity: 7
         }
       ]
     ];
