@@ -49,85 +49,34 @@ void messageHandler(char *topic, byte *payload, unsigned int length)
   memcpy(message, payload, length);
   message[length] = '\0';
 
-  Serial.print("Complete Message: ");
+  Serial.print("Message: ");
   Serial.println(message);
 
-  // Check for dispense command (not action!)
-  if (strstr(message, "\"command\":\"dispense\"") != NULL || 
-      strstr(message, "\"command\": \"dispense\"") != NULL)
+  // Extract quantity for target pill count
+  char *quantityStart = strstr(message, "\"quantity\":");
+  if (quantityStart)
   {
-    Serial.println("✓ Dispense command detected");
-    
-    // Extract quantity
-    char *quantityStart = strstr(message, "\"quantity\":");
-    if (quantityStart)
-    {
-      quantityStart += 11; // Move past "quantity":
-      while (*quantityStart == ' ' || *quantityStart == '\t') {
-        quantityStart++;
-      }
-      targetPillCount = atoi(quantityStart);
-      Serial.print("Target pill count set to: ");
-      Serial.println(targetPillCount);
-    }
-    else
-    {
-      Serial.println("Warning: No quantity specified, using default");
-      targetPillCount = 10; // Default value
-    }
-    
-    // Extract medicine information for logging
-    char *medicineStart = strstr(message, "\"medicine_name\":\"");
-    if (medicineStart) {
-      medicineStart += 17; // Move past "medicine_name":"
-      char *medicineEnd = strstr(medicineStart, "\"");
-      if (medicineEnd) {
-        int nameLength = medicineEnd - medicineStart;
-        char medicineName[nameLength + 1];
-        strncpy(medicineName, medicineStart, nameLength);
-        medicineName[nameLength] = '\0';
-        Serial.print("Medicine: ");
-        Serial.println(medicineName);
-      }
-    }
-    
-    // Start dispensing
-    pillCount = 0;
-    dispensing = true; 
-    openGate();
-    Serial.println("=== STARTING DISPENSE OPERATION ===");
-    Serial.print("Target pills: ");
+    quantityStart += 11; // Move past "quantity":
+    targetPillCount = atoi(quantityStart);
+    Serial.print("Target pill count set to: ");
     Serial.println(targetPillCount);
-    
-    // Immediate confirmation with prescription ID
-    char confirmMsg[256];
-    char *prescriptionStart = strstr(message, "\"prescription_id\":\"");
-    if (prescriptionStart) {
-      prescriptionStart += 19; // Move past "prescription_id":"
-      char *prescriptionEnd = strstr(prescriptionStart, "\"");
-      if (prescriptionEnd) {
-        int idLength = prescriptionEnd - prescriptionStart;
-        char prescriptionId[idLength + 1];
-        strncpy(prescriptionId, prescriptionStart, idLength);
-        prescriptionId[idLength] = '\0';
-        
-        sprintf(confirmMsg, "{\"status\":\"dispensing_started\",\"targetCount\":%d,\"prescription_id\":\"%s\"}", 
-                targetPillCount, prescriptionId);
-      } else {
-        sprintf(confirmMsg, "{\"status\":\"dispensing_started\",\"targetCount\":%d}", targetPillCount);
-      }
-    } else {
-      sprintf(confirmMsg, "{\"status\":\"dispensing_started\",\"targetCount\":%d}", targetPillCount);
-    }
-    
-    mqttClient.publish(PUBLISH_TOPIC, confirmMsg);
   }
-  else
+
+  // Process commands here
+  char *actionStart = strstr(message, "\"action\":\"");
+  if (actionStart)
   {
-    Serial.println("No dispense command found in message");
-    Serial.println("Expected: \"command\":\"dispense\"");
+    actionStart += 10; // Move past "action":" 
+    if (strncmp(actionStart, "dispense\"", 9) == 0)
+    {
+      // Reset pill count for new dispense operation
+      pillCount = 0;
+      dispensing = true; 
+      Serial.println("Starting new dispense operation");
+    }
   }
 }
+
 // Connect to AWS IoT
 void connectToAWS()
 {
@@ -263,6 +212,7 @@ void loop()
     if (pillCount >= targetPillCount)
     {
       stopMotor();
+      delay(10000);
       closeGate();
       Serial.println("Target pill count reached. Motor stopped.");
 
@@ -279,7 +229,7 @@ void loop()
 
 
   if (dispensing) {
-    int motorSpeed = 60;
+    int motorSpeed = 90;
     setMotorSpeed(motorSpeed);
   } else {
     stopMotor();
