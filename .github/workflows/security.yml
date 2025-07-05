@@ -1,0 +1,74 @@
+name: Security Scans
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly
+
+jobs:
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+
+    strategy:
+      matrix:
+        language: [ 'javascript' ]
+        component: [ 'backend', 'frontend' ]
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          source-root: code/${{ matrix.component }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.component == 'backend' && '18' || '20' }}
+          cache: 'npm'
+          cache-dependency-path: code/${{ matrix.component }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./code/${{ matrix.component }}
+        run: npm ci
+
+      - name: Build (frontend only)
+        if: matrix.component == 'frontend'
+        working-directory: ./code/frontend
+        run: npm run build
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  dependency-check:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        component: [backend, frontend]
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.component == 'backend' && '18' || '20' }}
+
+      - name: Install dependencies
+        working-directory: ./code/${{ matrix.component }}
+        run: npm ci
+
+      - name: Run npm audit
+        working-directory: ./code/${{ matrix.component }}
+        run: npm audit --audit-level=moderate
