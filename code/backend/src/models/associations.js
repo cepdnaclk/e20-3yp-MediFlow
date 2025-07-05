@@ -3,6 +3,7 @@ const Patient = require('./Patient');
 const Prescription = require('./Prescription');
 const Medicine = require('./Medicine');
 const Dispenser = require('./Dispenser');
+const Doctor = require('./Doctor');
 
 // User-Prescription relationships
 User.hasMany(Prescription, { foreignKey: 'doctorId' });
@@ -16,11 +17,14 @@ Prescription.belongsTo(Patient, { foreignKey: 'patientId' });
 Medicine.hasMany(Dispenser, { foreignKey: 'medicine_id' });
 Dispenser.belongsTo(Medicine, { foreignKey: 'medicine_id' });
 
+User.hasOne(Doctor, { foreignKey: 'userId' });
+Doctor.belongsTo(User, { foreignKey: 'userId' });
 
 module.exports = {
     User,
     Patient,
     Prescription,
     Medicine,
-    Dispenser
+    Dispenser,
+    Doctor
 };
