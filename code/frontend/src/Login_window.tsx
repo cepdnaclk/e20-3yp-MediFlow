@@ -15,10 +15,17 @@ const Login_window = ({ setUser }) => {
   const [strings, setStrings] = useState([]);
   const [particles, setParticles] = useState([]);
 
+  // Handle forgot password navigation
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    navigate('/forgot-password');
+  };
 
-  // Check if user is already logged in - ADD THIS EFFECT
+  // Check if user is already logged in
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    // Check both localStorage and sessionStorage for tokens
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    
     if (token) {
       try {
         // Decode token to get user role
@@ -26,7 +33,18 @@ const Login_window = ({ setUser }) => {
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
         const decodedToken = JSON.parse(window.atob(base64));
         
-        // Redirect based on role
+        // Check if this user needs to reset password
+        const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const sessionUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+        const user = localUser.email ? localUser : sessionUser;
+        
+        if (user.passwordResetRequired) {
+          // If password reset is required, navigate there
+          navigate('/reset-password');
+          return;
+        }
+        
+        // Otherwise redirect based on role
         if (decodedToken.role === "doctor") {
           navigate("/doc_dashboard");
         } else if (decodedToken.role === "pharmacist") {
@@ -36,14 +54,14 @@ const Login_window = ({ setUser }) => {
         }
         
         // Also update the app state
-        const user = {
+        setUser({
           id: decodedToken.id,
           role: decodedToken.role
-        };
-        setUser(user);
+        });
       } catch (error) {
         // If token is invalid, remove it
         localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
         console.error("Invalid token:", error);
       }
     }
@@ -54,7 +72,7 @@ const Login_window = ({ setUser }) => {
     const generatedStrings = [];
     const generatedParticles = [];
     
-    // Generate 8 strings
+    // Generate strings
     for (let i = 0; i < 13; i++) {
       const startY = Math.random() * window.innerHeight;
       const endY = Math.random() * window.innerHeight;
@@ -116,74 +134,81 @@ const Login_window = ({ setUser }) => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    // Send credentials to the backend auth endpoint
-    const response = await fetch(`${API_URL}/api/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    try {
+      // Send credentials to the backend auth endpoint
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Login failed");
+        return;
+      }
+
+      // Extract token
+      const { token } = data;
+
+      // Decode token to get user data
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const decodedToken = JSON.parse(window.atob(base64));
+
+      // Create user object with data from token
+      const user = {
+        id: decodedToken.id,
+        role: decodedToken.role,
         email: formData.email,
-        password: formData.password,
-      }),
-    });
+        passwordResetRequired: data.user.passwordResetRequired
+      };
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      setError(data.message || "Login failed");
-      return;
+      // KEY CHANGE: Store differently based on passwordResetRequired status
+      if (data.user.passwordResetRequired) {
+        // For temporary password logins, use sessionStorage instead
+        // This will be cleared when the browser is closed or back button is clicked
+        sessionStorage.setItem("token", token);
+        sessionStorage.setItem("user", JSON.stringify(data.user));
+        
+        // Clear any possible localStorage values to prevent automatic login
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        
+        // Redirect to password reset
+        navigate('/reset-password');
+      } else {
+        // Only store in localStorage for permanent logins
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        
+        // Set user in app state
+        setUser(user);
+        
+        // Redirect to appropriate dashboard
+        if (user.role === "doctor") {
+          navigate("/doc_dashboard");
+        } else if (user.role === "pharmacist") {
+          navigate("/pharm_dashboard");
+        } else if (user.role === "admin") {
+          navigate("/admin_dashboard");
+        }
+      }
+      
+      setError("");
+    } catch (err) {
+      console.error("Error during login:", err);
+      setError("Server error. Try again later.");
     }
-
-    // Extract token
-    const { token } = data;
-
-    // Store token in localStorage for future API requests
-    localStorage.setItem("token", token);
-    
-    // Store user data in localStorage
-    localStorage.setItem("user", JSON.stringify(data.user));
-
-    // Decode token to get user data (without validation - just for UI purposes)
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const decodedToken = JSON.parse(window.atob(base64));
-
-    // Create user object with data from token
-    const user = {
-      id: decodedToken.id,
-      role: decodedToken.role,
-      email: formData.email,
-      passwordResetRequired: data.user.passwordResetRequired
-    };
-
-    // Set user in app state
-    setUser(user);
-    setError("");
-
-    // IMPORTANT FIX: Check if password reset is required before redirecting to dashboard
-    if (data.user.passwordResetRequired) {
-      // Redirect to password reset page and return early
-      navigate('/reset-password');
-      return; // This prevents the role-based redirection from executing
-    }
-
-    // Only redirect to dashboard if password reset is not required
-    if (user.role === "doctor") {
-      navigate("/doc_dashboard");
-    } else if (user.role === "pharmacist") {
-      navigate("/pharm_dashboard");
-    } else if (user.role === "admin") {
-      navigate("/admin_dashboard");
-    }
-  } catch (err) {
-    console.error("Error during login:", err);
-    setError("Server error. Try again later.");
-  }
-};
+  };
 
   return (
     <div className="relative flex items-center justify-center w-full min-h-screen bg-black overflow-hidden">
@@ -228,7 +253,7 @@ const Login_window = ({ setUser }) => {
       </svg>
       
       {/* Login box */}
-      <div className="z-10 w-100  bg-opacity-5 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-purple-200 border-opacity-10">
+      <div className="z-10 w-100 bg-opacity-5 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-purple-200 border-opacity-10">
         <div className="flex items-center mb-6 justify-center">
           <div className="mr-4 bg-purple-900 bg-opacity-10 p-2 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-15 w-15 text-blue-300" viewBox="0 0 20 20" fill="currentColor">
@@ -286,19 +311,15 @@ const Login_window = ({ setUser }) => {
             </div>
           </div>
 
-          {/* Remember Me & Forgot Password */}
-          <div className="flex justify-between items-center">
-            <label className="flex items-center gap-2 text-blue-200 cursor-pointer">
-              <input
-                type="checkbox"
-                name="rememberMe"
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-700 rounded"
-                checked={formData.rememberMe}
-                onChange={handleChange}
-              />
-              <span className="text-sm">Remember me</span>
-            </label>
-            <a href="#" className="text-sm font-medium text-purple-400 hover:text-blue-300">Forgot password?</a>
+          {/* Forgot Password */}
+          <div className="flex justify-end items-center">
+            <a 
+              href="#" 
+              onClick={handleForgotPassword} 
+              className="text-sm font-medium text-purple-400 hover:text-blue-300"
+            >
+              Forgot password?
+            </a>
           </div>
 
           {/* Submit Button */}

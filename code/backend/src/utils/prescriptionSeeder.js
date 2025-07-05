@@ -183,7 +183,7 @@ async function seedPrescriptions() {
           patientStatus: patientStatus,
           doctorComments: doctorComments,
           // Give a mix of pending and dispensed prescriptions
-          status: i === 0 ? "pending" : "dispensed"
+          status:  "dispensed"
         });
         console.log(`✅ Created prescription: ${prescription.id}, Date: ${prescriptionDate}, Diagnosis: ${diagnosis}`);
       }

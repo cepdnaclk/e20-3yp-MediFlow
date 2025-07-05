@@ -3,7 +3,7 @@ import './App.css';
 import React from 'react';
 import PharmacistDashboard from './Pharmacist/PharmacistDashboard.js';
 import DispenserDashboard from './Pharmacist/DispenserDashboard';
-import Login_window from './Login_window.js';
+import Login_window from './Login_window';
 import MediFlowNavbar from './MediFlowNavBar.js';
 import RFIDScanPage from './Doctor/Rfid_scan.js';
 import PatientProfile from './Doctor/Patient_Profile.js';
@@ -17,18 +17,22 @@ import PatientRegistration from './Admin/PatientRegistration';
 import PharmacistRegistration from './Admin/PharmacistRegistration';
 import AdminRegistration from './Admin/AdminRegistration';
 import ProtectedRoute from './components/ProtectedRoutes';
-import ResetPassword from './ResetPassword';
 
-
+// Import password reset components
+import ForgotPassword from './components/ForgotPassword';
+import ResetPasswordVerify from './components/ResetPasswordVerify';
+import ResetPassword from './components/PasswordReset';
 
 // AppContent component to access useLocation inside Router
 const AppContent = ({ user, setUser }) => {
   const location = useLocation();
   
-  // Don't show navbar on login pages and reset password page
+  // Don't show navbar on login pages and reset password pages
   const hideNavbar = location.pathname === '/' || 
                      location.pathname === '/login' || 
-                     location.pathname === '/reset-password';
+                     location.pathname === '/reset-password' ||
+                     location.pathname === '/forgot-password' ||
+                     location.pathname.startsWith('/password-reset/');
   
   return (
     <>
@@ -36,11 +40,14 @@ const AppContent = ({ user, setUser }) => {
       {!hideNavbar && <MediFlowNavbar userRole={user?.role || 'doctor'} />}
       
       <Routes>
+        {/* Authentication Routes */}
         <Route path="/" element={<Login_window setUser={setUser} />} />
         <Route path="/login" element={<Login_window setUser={setUser} />} />
 
+        {/* Password Reset Routes */}
         <Route path="/reset-password" element={<ResetPassword />} />
-
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/password-reset/:token" element={<ResetPasswordVerify />} />
 
         {/* Protected Pharmacist Routes */}
         <Route 
@@ -98,7 +105,6 @@ const AppContent = ({ user, setUser }) => {
             </ProtectedRoute>
           } 
         />
-
         <Route 
           path="/admin/register-patient" 
           element={
@@ -107,7 +113,6 @@ const AppContent = ({ user, setUser }) => {
             </ProtectedRoute>
           } 
         />
-        
         <Route 
           path="/admin/register-doctor" 
           element={
@@ -116,7 +121,6 @@ const AppContent = ({ user, setUser }) => {
             </ProtectedRoute>
           } 
         />
-        
         <Route 
           path="/admin/register-pharmacist" 
           element={
@@ -125,12 +129,21 @@ const AppContent = ({ user, setUser }) => {
             </ProtectedRoute>
           } 
         />
-
         <Route 
           path="/admin/register-admin" 
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminRegistration />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Protected Pharmacist Routes - Dispensers */}
+        <Route 
+          path="/dispensers" 
+          element={
+            <ProtectedRoute allowedRoles={['pharmacist']}>
+              <DispenserDashboard />
             </ProtectedRoute>
           } 
         />
@@ -148,14 +161,6 @@ const AppContent = ({ user, setUser }) => {
                       : '/pharm_dashboard'
                 } /> 
               : <Navigate to="/login" />
-          } 
-        />
-        <Route 
-          path="/dispensers" 
-          element={
-            <ProtectedRoute allowedRoles={['pharmacist']}>
-              <DispenserDashboard />
-            </ProtectedRoute>
           } 
         />
       </Routes>
