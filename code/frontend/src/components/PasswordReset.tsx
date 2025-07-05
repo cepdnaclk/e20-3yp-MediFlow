@@ -13,6 +13,23 @@ const PasswordReset = () => {
   const [strings, setStrings] = useState([]);
   const [particles, setParticles] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
+  
+  // New state variables for token-based reset
+  const [isTokenReset, setIsTokenReset] = useState(false);
+  const [resetToken, setResetToken] = useState('');
+  const [userId, setUserId] = useState('');
+
+  // Check if this is a token-based reset or a normal reset
+  useEffect(() => {
+    const token = localStorage.getItem('resetToken');
+    const storedUserId = localStorage.getItem('resetUserId');
+    
+    if (token && storedUserId) {
+      setIsTokenReset(true);
+      setResetToken(token);
+      setUserId(storedUserId);
+    }
+  }, []);
 
   // Generate random curved strings across the screen
   useEffect(() => {
@@ -83,66 +100,89 @@ const PasswordReset = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
+    e.preventDefault();
+    setError('');
 
-  // Validate passwords
-  if (newPassword !== confirmPassword) {
-    setError('Passwords do not match');
-    return;
-  }
-
-  if (!validatePassword(newPassword)) {
-    setError('Password must be at least 8 characters with at least one uppercase letter, one lowercase letter, and one number');
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const token = localStorage.getItem('token');
-    const userId = JSON.parse(localStorage.getItem('user'))?.id;
-
-    if (!token || !userId) {
-      setError('You must be logged in to reset your password');
-      setLoading(false);
+    // Validate passwords
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
 
-    const response = await fetch(`${API_URL}/api/password/reset`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ userId, newPassword })
-    });
-
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.message || 'Failed to reset password');
+    if (!validatePassword(newPassword)) {
+      setError('Password must be at least 8 characters with at least one uppercase letter, one lowercase letter, and one number');
+      return;
     }
 
-    setSuccess(true);
-    
-    // Update success message to indicate logout
-    setSuccessMessage('Password reset successfully! You will be logged out in a moment.');
-    
-    // Timeout before logout
-    setTimeout(() => {
-      // Clear user data and token from localStorage (logout)
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+    setLoading(true);
+
+    try {
+      let response;
       
-      // Redirect to login page
-      navigate('/login');
-    }, 2000);
-  } catch (err) {
-    setError(err.message || 'An error occurred while resetting your password');
-  } finally {
-    setLoading(false);
-  }
-};
+      if (isTokenReset) {
+        // Reset with token (no auth required)
+        response = await fetch(`${API_URL}/api/password/reset-with-token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            token: resetToken,
+            newPassword
+          })
+        });
+      } else {
+        // Normal authenticated reset
+        const token = localStorage.getItem('token');
+        const userId = JSON.parse(localStorage.getItem('user'))?.id;
+
+        if (!token || !userId) {
+          setError('You must be logged in to reset your password');
+          setLoading(false);
+          return;
+        }
+
+        response = await fetch(`${API_URL}/api/password/reset`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ userId, newPassword })
+        });
+      }
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to reset password');
+      }
+
+      setSuccess(true);
+      
+      if (isTokenReset) {
+        // Clean up localStorage
+        localStorage.removeItem('resetToken');
+        localStorage.removeItem('resetUserId');
+        setSuccessMessage('Password reset successfully! You will be redirected to login in a moment.');
+      } else {
+        setSuccessMessage('Password reset successfully! You will be logged out in a moment.');
+      }
+      
+      // Timeout before logout/redirect
+      setTimeout(() => {
+        // Clear user data and token from localStorage (logout)
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // Redirect to login page
+        navigate('/login');
+      }, 2000);
+    } catch (err) {
+      setError(err.message || 'An error occurred while resetting your password');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative flex items-center justify-center w-full min-h-screen bg-black overflow-hidden">
@@ -196,7 +236,11 @@ const PasswordReset = () => {
           </div>
           <div className="text-center">
             <h2 className="text-4xl text-white font-bold mb-1">Reset Password</h2>
-            <p className="text-purple-200">Create a new secure password</p>
+            <p className="text-purple-200">
+              {isTokenReset 
+                ? "Create your new password" 
+                : "Create a new secure password"}
+            </p>
           </div>
         </div>
         

@@ -15,6 +15,11 @@ const Login_window = ({ setUser }) => {
   const [strings, setStrings] = useState([]);
   const [particles, setParticles] = useState([]);
 
+    // Handle forgot password navigation
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    navigate('/forgot-password');
+  };
 
   // Check if user is already logged in - ADD THIS EFFECT
   useEffect(() => {
@@ -289,16 +294,17 @@ const Login_window = ({ setUser }) => {
           {/* Remember Me & Forgot Password */}
           <div className="flex justify-between items-center">
             <label className="flex items-center gap-2 text-blue-200 cursor-pointer">
-              <input
-                type="checkbox"
-                name="rememberMe"
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-700 rounded"
-                checked={formData.rememberMe}
-                onChange={handleChange}
-              />
-              <span className="text-sm">Remember me</span>
+              
+              
             </label>
-            <a href="#" className="text-sm font-medium text-purple-400 hover:text-blue-300">Forgot password?</a>
+            {/* Updated forgot password link with navigation */}
+            <a 
+              href="#" 
+              onClick={handleForgotPassword} 
+              className="text-sm font-medium text-purple-400 hover:text-blue-300"
+            >
+              Forgot password?
+            </a>
           </div>
 
           {/* Submit Button */}

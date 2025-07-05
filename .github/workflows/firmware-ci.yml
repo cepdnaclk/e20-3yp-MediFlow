@@ -1,0 +1,57 @@
+name: Firmware CI
+
+on:
+  push:
+    paths:
+      - 'code/firmware/**'
+      - '.github/workflows/firmware.yml'
+  pull_request:
+    paths:
+      - 'code/firmware/**'
+
+jobs:
+  build:
+    name: Build Firmware
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PlatformIO
+        run: pip install --upgrade platformio
+
+      - name: Create dummy certificates
+        working-directory: ./code/firmware
+        run: |
+          mkdir -p src/certs
+          cat > src/certs/certificates.h << 'EOF'
+          #ifndef CERTIFICATES_H
+          #define CERTIFICATES_H
+          const char AWS_CERT_CA[] = "dummy_cert";
+          const char AWS_CERT_CRT[] = "dummy_cert";
+          const char AWS_CERT_PRIVATE[] = "dummy_key";
+          #endif
+          EOF
+
+      - name: Build firmware
+        working-directory: ./code/firmware
+        run: pio run
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-build
+          path: code/firmware/.pio/build/upesy_wroom/firmware.bin
