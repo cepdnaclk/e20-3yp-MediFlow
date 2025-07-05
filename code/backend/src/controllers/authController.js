@@ -1,12 +1,13 @@
 const User = require("../models/User");
-const Doctor = require("../models/Doctor"); // Add this import
+const Doctor = require("../models/Doctor");
+const Pharmacist = require("../models/Pharmacist"); // Add this import
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const generator = require('generate-password');
 const { sendTemporaryPassword } = require('../utils/emailService');
 const { Op } = require("sequelize");
 
-// Register User - Updated with Doctor model integration
+// Register User - Updated with Doctor and Pharmacist model integration
 exports.register = async (req, res) => {
     try {
         const { 
@@ -22,7 +23,10 @@ exports.register = async (req, res) => {
             qualifications,
             licenseNumber,
             experience,
-            hospitalAffiliation
+            hospitalAffiliation,
+            // Pharmacist specific fields
+            workExperience,
+            pharmacyName
         } = req.body;
 
         console.log("Register endpoint called with:");
@@ -51,12 +55,29 @@ exports.register = async (req, res) => {
             }
         }
 
+        // For pharmacists, check if NIC or license number already exists
+        if (role === 'pharmacist') {
+            const existingPharmacist = await Pharmacist.findOne({ 
+                where: { 
+                    [Op.or]: [
+                        { nic: nic },
+                        { licenseNumber: licenseNumber }
+                    ]
+                } 
+            });
+            if (existingPharmacist) {
+                return res.status(400).json({ 
+                    message: "Pharmacist with this NIC or license number already exists" 
+                });
+            }
+        }
+
         let hashedPassword;
         let tempPassword = password;
         let passwordResetRequired = false;
 
-        // For doctors, generate a temporary password and require reset
-        if (role === 'doctor') {
+        // For doctors and pharmacists, generate a temporary password and require reset
+        if (role === 'doctor' || role === 'pharmacist') {
             // Generate random password
             tempPassword = generator.generate({
                 length: 10,
@@ -108,9 +129,24 @@ exports.register = async (req, res) => {
             });
         }
 
+        // If role is pharmacist, create pharmacist profile
+        if (role === 'pharmacist') {
+            await Pharmacist.create({
+                userId: user.id,
+                firstName,
+                lastName,
+                nic,
+                phone,
+                specialization,
+                licenseNumber,
+                workExperience: workExperience ? parseInt(workExperience) : null,
+                pharmacyName
+            });
+        }
+
         res.status(201).json({ 
-            message: role === 'doctor' ? 
-                "Doctor registered successfully. Temporary password sent to email" : 
+            message: (role === 'doctor' || role === 'pharmacist') ? 
+                `${role.charAt(0).toUpperCase() + role.slice(1)} registered successfully. Temporary password sent to email` : 
                 "User registered successfully", 
             user: {
                 id: user.id,
