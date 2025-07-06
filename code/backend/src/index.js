@@ -77,6 +77,8 @@ app.use("/api/dispensers", require("./routes/dispenser"));
 app.use('/api/password', passwordRoutes);
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes")); 
+app.use("/api/doctor", require("./routes/doctorRoutes"));
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {

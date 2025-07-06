@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { 
   Calendar as CalendarIcon, 
   Clock, 
-  MapPin, 
-  ChevronDown,
   PlusCircle 
 } from 'lucide-react';
 import { Button } from '../components/ui/button.js';
@@ -11,10 +9,20 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from '../components/ui/card.js';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const DoctorDashboardHeader = ({user}) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [greeting, setGreeting] = useState("");
   const navigate = useNavigate();
+  
+  // Add state for user profile
+  const [userProfile, setUserProfile] = useState({
+    firstName: '',
+    lastName: '',
+    profilePhoto: null,
+    specialization: ''
+  });
   
   useEffect(() => {
     // Update time every minute
@@ -35,6 +43,36 @@ const DoctorDashboardHeader = ({user}) => {
     return () => clearInterval(timer);
   }, [currentTime]);
   
+  // Fetch user profile when component mounts
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token) return;
+        
+        const response = await fetch(`${API_URL}/api/users/profile`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          setUserProfile({
+            firstName: userData.firstName || '',
+            lastName: userData.lastName || '',
+            profilePhoto: userData.profilePhoto || null,
+            specialization: userData.specialization || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+    
+    fetchUserProfile();
+  }, []);
+  
   // Format date
   const formattedDate = currentTime.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -50,92 +88,127 @@ const DoctorDashboardHeader = ({user}) => {
     hour12: true
   });
   
-  // Upcoming appointments for today
-  const upcomingAppointments = [
-    { time: "10:30 AM", patient: "John Doe", type: "Check-up" },
-    { time: "1:15 PM", patient: "Emily Chen", type: "Follow-up" },
-    { time: "3:00 PM", patient: "Robert Williams", type: "Consultation" }
-  ];
+  // Compute full name from profile or use fallback
+  const fullName = userProfile.firstName && userProfile.lastName 
+    ? `Dr. ${userProfile.firstName} ${userProfile.lastName}` 
+    : 'Dr. Sam Sulek';
   
   return (
-    <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-6 mt-6">
-      <Card className="border border-gray-200 overflow-hidden shadow-md rounded-xl">
+    <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-8 mt-6">
+      <Card className="border-0 overflow-hidden shadow-xl bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/20 backdrop-blur-sm">
         <CardContent className="p-0">
           <motion.div 
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="p-6 bg-gradient-to-br from-white to-indigo-50/30"
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="p-8"
           >
-            <div className="flex flex-col lg:flex-row justify-between">
-              {/* Left: Calendar & Time */}
-              <div className="mb-6 lg:mb-0">
-                <div className="flex items-center mb-2">
-                  <CalendarIcon className="w-5 h-5 mr-2 text-indigo-600" />
-                  <h2 className="text-lg font-medium text-gray-800">{formattedDate}</h2>
-                </div>
-                
-                <div className="flex items-center mb-4">
-                  <Clock className="w-5 h-5 mr-2 text-indigo-600" />
-                  <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    {formattedTime}
+            <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
+              {/* Left: Profile Picture */}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+                className="relative flex-shrink-0"
+              >
+                <div className="relative">
+                  <div className="w-40 h-40 rounded-3xl overflow-hidden ring-4 ring-white/70 ring-offset-4 ring-offset-transparent shadow-2xl">
+                    {userProfile.profilePhoto ? (
+                      <img 
+                        src={userProfile.profilePhoto} 
+                        alt={fullName} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '/doctor_avatar.png';
+                        }} 
+                      />
+                    ) : (
+                      <img 
+                        src="/doctor_avatar.png" 
+                        alt={fullName} 
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+                  
+                  {/* Online Status Indicator */}
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
+                    <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
                   </div>
                 </div>
                 
-                <p className="text-gray-600 text-lg">{greeting}, Dr. Sam Sulek</p>
-                
-                <div className="mt-4 flex items-center">
-                  <MapPin className="w-4 h-4 mr-1 text-gray-500" />
-                  <span className="text-sm text-gray-500 mr-1">Primary Location:</span>
-                  <span className="text-sm font-medium text-gray-700 mr-1">Northwest Medical Center</span>
-                  <ChevronDown className="w-3 h-3 text-gray-500" />
+                {/* Profile Info Below Picture */}
+                <div className="mt-6 text-center">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-1">{fullName}</h3>
+                  <p className="text-sm text-gray-600 bg-white/60 px-3 py-1 rounded-full inline-block">
+                    {userProfile.specialization || 'Physician'}
+                  </p>
                 </div>
-              </div>
+              </motion.div>
               
-              {/* Center: Today's appointments summary */}
-              <div className="mb-6 lg:mb-0 lg:ml-8 lg:mr-8 flex-1">
-                <h3 className="text-sm uppercase tracking-wider text-gray-500 font-semibold mb-3">Today's Schedule</h3>
-                <div className="space-y-3">
-                  {upcomingAppointments.map((appointment, idx) => (
-                    <div key={idx} className="flex items-center p-2 rounded-md hover:bg-white transition-colors">
-                      <div className="w-16 text-sm font-medium text-indigo-600">{appointment.time}</div>
-                      <div className="ml-2">
-                        <div className="text-sm font-medium text-gray-800">{appointment.patient}</div>
-                        <div className="text-xs text-gray-500">{appointment.type}</div>
-                      </div>
+              {/* Center: Welcome Message & Date/Time */}
+              <div className="flex-1 text-center lg:text-left">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                  <h1 className="text-4xl lg:text-5xl font-bold mb-4">
+                    <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 bg-clip-text text-transparent">
+                      {greeting}
+                    </span>
+                  </h1>
+                  
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center justify-center lg:justify-start">
+                      <CalendarIcon className="w-5 h-5 mr-3 text-indigo-600" />
+                      <span className="text-lg font-medium text-gray-700">{formattedDate}</span>
                     </div>
-                  ))}
-                </div>
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <Button variant="ghost" className="text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 p-0">
-                    View full schedule →
-                  </Button>
-                </div>
+                    
+                    <div className="flex items-center justify-center lg:justify-start">
+                      <Clock className="w-5 h-5 mr-3 text-indigo-600" />
+                      <span className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                        {formattedTime}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-600 text-lg leading-relaxed">
+                    Welcome back! Ready to provide exceptional care today?
+                  </p>
+                </motion.div>
               </div>
               
               {/* Right: Join a Clinic button */}
-              <div className="flex flex-col items-center justify-center lg:pl-4 mr-30">
-                <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex flex-col items-center"
-                  >
-                    <Button 
-                      className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-6 py-6 rounded-lg shadow-md"
-                      onClick={() => navigate('/scan')}
+              <div className="flex flex-col items-center justify-center">
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="relative"
+                >
+                  <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white/50">
+                    <motion.div
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="text-center"
                     >
-                      <PlusCircle className="w-6 h-6 mr-2" />
-                      Join a Clinic
-                    </Button>
-                    <span className="text-xs text-gray-500 mt-2">Connect with new clinics in your network</span>
-                  </motion.div>
-                  
-                  <div className="mt-4 pt-4 border-t border-gray-100 w-full text-center">
-                    <div className="text-sm font-medium text-gray-800">Clinics: 3</div>
-                    <div className="text-xs text-gray-500">Active collaborations</div>
+                      <Button 
+                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-8 py-6 rounded-xl shadow-lg shadow-indigo-500/25 text-white font-semibold text-lg transition-all duration-300"
+                        onClick={() => navigate('/scan')}
+                      >
+                        <PlusCircle className="w-6 h-6 mr-3" />
+                        Join a Clinic
+                      </Button>
+                      <p className="text-sm text-gray-500 mt-3 max-w-xs">
+                        Connect with new clinics and expand your network
+                      </p>
+                    </motion.div>
                   </div>
-                </div>
+                  
+                  {/* Decorative gradient blur */}
+                  <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 blur-xl -z-10 rounded-2xl"></div>
+                </motion.div>
               </div>
             </div>
           </motion.div>

@@ -302,7 +302,7 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <div className="p-4 border-b border-gray-100">
+                      {/* <div className="p-4 border-b border-gray-100">
                         <div className="flex items-center space-x-3">
                           <div className="h-12 w-12 rounded-full overflow-hidden ring-2 ring-gray-100">
                             {userProfile.profilePhoto ? (
@@ -327,7 +327,7 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                             <p className="text-sm text-gray-500">{title}</p>
                           </div>
                         </div>
-                      </div>
+                      </div> */}
                       <div className="p-2">
                         <button
                           className="group w-full flex items-center px-3 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 rounded-xl transition-all duration-200"

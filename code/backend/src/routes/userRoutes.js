@@ -46,6 +46,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
         // Add the name to the main user object for convenience
         user.dataValues.firstName = doctor.firstName;
         user.dataValues.lastName = doctor.lastName;
+        user.dataValues.specialization = doctor.specialization;
         user.dataValues.profilePhoto = doctor.profileImage;
       }
     } else if (user.role === 'pharmacist') {
