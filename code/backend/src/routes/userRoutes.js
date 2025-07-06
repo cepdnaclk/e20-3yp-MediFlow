@@ -34,6 +34,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
             
             // Add permissions directly to the user object for easier access in frontend
             user.dataValues.permissions = admin.permissions;
+            user.dataValues.profilePhoto = admin.photo;
         }
         } else if (user.role === 'doctor') {
       const doctor = await Doctor.findOne({
@@ -45,6 +46,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
         // Add the name to the main user object for convenience
         user.dataValues.firstName = doctor.firstName;
         user.dataValues.lastName = doctor.lastName;
+        user.dataValues.profilePhoto = doctor.profileImage;
       }
     } else if (user.role === 'pharmacist') {
       const pharmacist = await Pharmacist.findOne({
@@ -56,6 +58,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
         // Add the name to the main user object for convenience
         user.dataValues.firstName = pharmacist.firstName;
         user.dataValues.lastName = pharmacist.lastName;
+        user.dataValues.profilePhoto = pharmacist.profileImage;
       }
     }
     

@@ -6,6 +6,9 @@ const Admin = require('../models/Admin');
 const Doctor = require('../models/Doctor');
 const Pharmacist = require('../models/Pharmacist');
 
+// Base URL for images (adjust based on your environment)
+const BASE_URL = process.env.API_URL;
+
 async function seedDb() {
   try {
     // Connect to database
@@ -38,7 +41,7 @@ async function seedDb() {
         lastName: 'Administrator',
         nic: '123456789V',
         phone: '0771234567',
-        photo: null,
+        photo: `${BASE_URL}/uploads/profiles/admin.png`,  // Use your existing image
         permissions: {
           canRegisterPatients: true,
           canRegisterDoctors: true,
@@ -76,6 +79,7 @@ async function seedDb() {
         lastName: 'Smith',
         nic: '987654321V',
         phone: '0772345678',
+        profileImage: `${BASE_URL}/uploads/profiles/doctor.png`,  // Use your existing image
         specialization: 'General Medicine',
         qualifications: 'MBBS, MD',
         licenseNumber: 'DOC001',
@@ -112,6 +116,7 @@ async function seedDb() {
         lastName: 'Doe',
         nic: '456789123V',
         phone: '0773456789',
+        profileImage: `${BASE_URL}/uploads/profiles/pharmacist.png`,  // Use your existing image
         specialization: 'Clinical Pharmacy',
         licenseNumber: 'PHA001',
         workExperience: 3,
@@ -131,4 +136,4 @@ async function seedDb() {
 }
 
 // Run the seed function
-seedDb()
+seedDb();
