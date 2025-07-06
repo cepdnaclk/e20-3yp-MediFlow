@@ -2,6 +2,9 @@ require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const sequelize = require('../config/db');
 const User = require('../models/User');
+const Admin = require('../models/Admin');
+const Doctor = require('../models/Doctor');
+const Pharmacist = require('../models/Pharmacist');
 
 async function seedDb() {
   try {
@@ -28,7 +31,23 @@ async function seedDb() {
         role: 'admin'
       });
       
-      console.log('✅ Admin user created successfully:', adminUser.username);
+      // Create corresponding admin record with all permissions
+      await Admin.create({
+        userId: adminUser.id,
+        firstName: 'System',
+        lastName: 'Administrator',
+        nic: '123456789V',
+        phone: '0771234567',
+        photo: null,
+        permissions: {
+          canRegisterPatients: true,
+          canRegisterDoctors: true,
+          canRegisterPharmacists: true,
+          canRegisterAdmins: true
+        }
+      });
+      
+      console.log('✅ Admin user and admin profile created successfully:', adminUser.username);
     }
     
     // Check if doctor user already exists
@@ -50,7 +69,21 @@ async function seedDb() {
         role: 'doctor'
       });
       
-      console.log('✅ Doctor user created successfully:', doctorUser.username);
+      // Create corresponding doctor record
+      await Doctor.create({
+        userId: doctorUser.id,
+        firstName: 'Dr. John',
+        lastName: 'Smith',
+        nic: '987654321V',
+        phone: '0772345678',
+        specialization: 'General Medicine',
+        qualifications: 'MBBS, MD',
+        licenseNumber: 'DOC001',
+        experience: 5,
+        hospitalAffiliation: 'General Hospital'
+      });
+      
+      console.log('✅ Doctor user and doctor profile created successfully:', doctorUser.username);
     }
     
     // Check if pharmacist user already exists
@@ -72,7 +105,20 @@ async function seedDb() {
         role: 'pharmacist'
       });
       
-      console.log('✅ Pharmacist user created successfully:', pharmacistUser.username);
+      // Create corresponding pharmacist record
+      await Pharmacist.create({
+        userId: pharmacistUser.id,
+        firstName: 'Jane',
+        lastName: 'Doe',
+        nic: '456789123V',
+        phone: '0773456789',
+        specialization: 'Clinical Pharmacy',
+        licenseNumber: 'PHA001',
+        workExperience: 3,
+        pharmacyName: 'City Pharmacy'
+      });
+      
+      console.log('✅ Pharmacist user and pharmacist profile created successfully:', pharmacistUser.username);
     }
     
   } catch (error) {

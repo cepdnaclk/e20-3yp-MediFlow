@@ -319,7 +319,7 @@ const PasswordReset = () => {
       </svg>
       
       {/* Reset Password Box - Styled like login box */}
-      <div className="z-10 w-100 bg-opacity-5 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-purple-200 border-opacity-10">
+      <div className="z-10 w-120 bg-opacity-5 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-purple-200 border-opacity-10">
         <div className="flex items-center mb-6 justify-center">
           <div className="mr-4 bg-purple-900 bg-opacity-10 p-2 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-15 w-15 text-blue-300" viewBox="0 0 20 20" fill="currentColor">
@@ -417,7 +417,7 @@ const PasswordReset = () => {
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full mt-2 flex justify-center py-3 px-4 border border-red-500 rounded-lg shadow-sm text-sm font-medium text-red-500 bg-transparent hover:bg-red-500 hover:bg-opacity-10 focus:outline-none"
+            className="w-full mt-2 flex justify-center py-3 px-4 border border-red-500 rounded-lg shadow-sm text-sm font-medium text-white bg-transparent hover:bg-red-500 hover:bg-opacity-10 focus:outline-none"
           >
             Sign out instead
           </button>

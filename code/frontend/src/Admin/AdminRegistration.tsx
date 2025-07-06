@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, ArrowLeft, CheckCircle, Lock, Upload, X, User, Mail, Phone, BadgeCheck } from 'lucide-react';
+import { Shield, ArrowLeft, CheckCircle, Lock, Upload, X, User, Mail, Phone, BadgeCheck, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card.js';
 import { Button } from '../components/ui/button.js';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = import.meta.env.REACT_APP_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const AdminRegistration = () => {
   const navigate = useNavigate();
@@ -18,8 +18,6 @@ const AdminRegistration = () => {
     email: '',
     phone: '',
     username: '',
-    password: '',
-    confirmPassword: '',
     permissions: {
       canRegisterPatients: true,
       canRegisterDoctors: false,
@@ -29,6 +27,8 @@ const AdminRegistration = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,43 +67,53 @@ const AdminRegistration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage('');
     
-    // Validate the form data
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match");
+    // Enhanced validation
+    if (!formData.firstName || !formData.lastName || !formData.nic || !formData.email || !formData.username) {
+      setErrorMessage('Please fill in all required fields');
+      setIsSubmitting(false);
+      return;
+    }
+    
+    // Validate NIC format (Sri Lankan NIC)
+    const nicRegex = /^([0-9]{9}[vVxX]|[0-9]{12})$/;
+    if (!nicRegex.test(formData.nic)) {
+      setErrorMessage('Please enter a valid NIC number');
       setIsSubmitting(false);
       return;
     }
     
     try {
-      // Include photo with the admin data
+      // Prepare admin data
       const adminData = {
-        ...formData,
-        photo: photoPreview
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        nic: formData.nic,
+        email: formData.email,
+        phone: formData.phone,
+        username: formData.username,
+        photo: photoPreview,
+        role: 'admin',
+        permissions: formData.permissions
       };
       
       // Make API call to register admin
-      const response = await fetch('${API_URL}/api/auth/register', {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          username: formData.username,
-          password: formData.password,
-          photo: photoPreview,
-          role: 'admin',
-          permissions: formData.permissions
-        })
+        body: JSON.stringify(adminData)
       });
+      
+      const data = await response.json();
       
       if (response.ok) {
         setIsSuccess(true);
+        setSuccessMessage(`${formData.firstName} ${formData.lastName} registered successfully! A temporary password has been sent to their email.`);
+        
         // Reset form
         setFormData({
           firstName: '',
@@ -112,8 +122,6 @@ const AdminRegistration = () => {
           email: '',
           phone: '',
           username: '',
-          password: '',
-          confirmPassword: '',
           permissions: {
             canRegisterPatients: true,
             canRegisterDoctors: false,
@@ -128,12 +136,11 @@ const AdminRegistration = () => {
           navigate('/admin_dashboard');
         }, 2000);
       } else {
-        const errorData = await response.json();
-        alert(`Registration failed: ${errorData.message}`);
+        setErrorMessage(data.message || 'Registration failed. Please try again.');
       }
     } catch (error) {
       console.error('Error registering admin:', error);
-      alert('Failed to register admin. Please try again.');
+      setErrorMessage('Failed to register admin. Please try again.');
     }
     
     setIsSubmitting(false);
@@ -196,6 +203,17 @@ const AdminRegistration = () => {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
+                {errorMessage && (
+                  <motion.div 
+                    className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+                    {errorMessage}
+                  </motion.div>
+                )}
+
                 {/* Photo Upload Section */}
                 <div className="flex flex-col md:flex-row gap-8 p-6 bg-red-50 rounded-xl">
                   <div className="flex-shrink-0">
@@ -353,6 +371,10 @@ const AdminRegistration = () => {
                     <h2 className="text-lg font-semibold text-gray-800">Admin Permissions</h2>
                   </div>
                   
+                  <p className="text-sm text-gray-600 mb-4">
+                    Select which entities this administrator will be allowed to register in the system.
+                  </p>
+                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center p-3 bg-white rounded-md border border-gray-200 hover:border-red-200 transition-colors">
                       <input
@@ -436,44 +458,13 @@ const AdminRegistration = () => {
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Password <span className="text-red-500">*</span></label>
-                        <div className="relative">
-                          <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            minLength={6}
-                            className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 transition-all"
-                          />
-                          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <Lock className="h-4 w-4 text-gray-400" />
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Password must be at least 6 characters</p>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password <span className="text-red-500">*</span></label>
-                        <div className="relative">
-                          <input
-                            type="password"
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            required
-                            className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 transition-all"
-                          />
-                          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <Lock className="h-4 w-4 text-gray-400" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  </div>
+                  
+                  <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mt-4">
+                    <p className="text-sm text-blue-700">
+                      <strong>Note:</strong> A temporary password will be automatically generated and sent to the administrator's email. 
+                      They will be required to change this password when they first log in.
+                    </p>
                   </div>
                 </div>
                 

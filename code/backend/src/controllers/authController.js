@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Doctor = require("../models/Doctor");
+const Admin = require("../models/Admin");
 const Pharmacist = require("../models/Pharmacist"); // Add this import
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -7,7 +8,7 @@ const generator = require('generate-password');
 const { sendTemporaryPassword } = require('../utils/emailService');
 const { Op } = require("sequelize");
 
-// Register User - Updated with Doctor and Pharmacist model integration
+// Register User - Updated with Admin, Doctor and Pharmacist model integration
 exports.register = async (req, res) => {
     try {
         const { 
@@ -26,7 +27,10 @@ exports.register = async (req, res) => {
             hospitalAffiliation,
             // Pharmacist specific fields
             workExperience,
-            pharmacyName
+            pharmacyName,
+            // Admin specific fields
+            permissions,
+            photo
         } = req.body;
 
         console.log("Register endpoint called with:");
@@ -71,13 +75,28 @@ exports.register = async (req, res) => {
                 });
             }
         }
+        
+        // For admins, check if NIC already exists
+        if (role === 'admin') {
+            const existingAdmin = await User.findOne({
+                where: {
+                    role: 'admin',
+                    username: username
+                }
+            });
+            if (existingAdmin) {
+                return res.status(400).json({
+                    message: "Administrator with this username already exists"
+                });
+            }
+        }
 
         let hashedPassword;
         let tempPassword = password;
         let passwordResetRequired = false;
 
-        // For doctors and pharmacists, generate a temporary password and require reset
-        if (role === 'doctor' || role === 'pharmacist') {
+        // For doctors, pharmacists, and admins, generate a temporary password and require reset
+        if (role === 'doctor' || role === 'pharmacist' || role === 'admin') {
             // Generate random password
             tempPassword = generator.generate({
                 length: 10,
@@ -143,9 +162,22 @@ exports.register = async (req, res) => {
                 pharmacyName
             });
         }
+        
+        // If role is admin, create admin profile
+        if (role === 'admin') {
+            await Admin.create({
+                userId: user.id,
+                firstName,
+                lastName,
+                nic,
+                phone,
+                photo,
+                permissions
+            });
+        }
 
         res.status(201).json({ 
-            message: (role === 'doctor' || role === 'pharmacist') ? 
+            message: (role === 'doctor' || role === 'pharmacist' || role === 'admin') ? 
                 `${role.charAt(0).toUpperCase() + role.slice(1)} registered successfully. Temporary password sent to email` : 
                 "User registered successfully", 
             user: {
@@ -160,6 +192,7 @@ exports.register = async (req, res) => {
         res.status(500).json({ message: "Error registering user", error: error.message });
     }
 };
+
 
 // Login User - keep as is for now
 exports.login = async (req, res) => {

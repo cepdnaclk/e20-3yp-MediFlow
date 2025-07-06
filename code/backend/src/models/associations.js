@@ -5,6 +5,7 @@ const Medicine = require('./Medicine');
 const Dispenser = require('./Dispenser');
 const Doctor = require('./Doctor');
 const Pharmacist = require('./Pharmacist');
+const Admin = require('./Admin');
 
 // User-Prescription relationships
 User.hasMany(Prescription, { foreignKey: 'doctorId' });
@@ -24,6 +25,10 @@ Doctor.belongsTo(User, { foreignKey: 'userId' });
 User.hasOne(Pharmacist, { foreignKey: 'userId' });
 Pharmacist.belongsTo(User, { foreignKey: 'userId' });
 
+// Admin associations
+User.hasOne(Admin, { foreignKey: 'userId' });
+Admin.belongsTo(User, { foreignKey: 'userId' });
+
 module.exports = {
     User,
     Patient,
@@ -31,5 +36,6 @@ module.exports = {
     Medicine,
     Dispenser,
     Doctor,
-    Pharmacist
+    Pharmacist,
+    Admin
 };
