@@ -2,13 +2,14 @@
 #include <DHT.h>
 #include "MotorControl.h"
 #include "LaserModule.h"
+#include "WiFiManagerModule.h"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include "certs/certificates.h"
 
-const char *ssid = "";
-const char *password = "";
+// WiFi Manager instance
+WiFiManagerModule wifiManager;
 
 // AWS IoT Core Configuration
 #define AWS_IOT_ENDPOINT "aelh7uratdfcb-ats.iot.us-east-1.amazonaws.com"
@@ -190,32 +191,29 @@ void setup()
   stopMotor();
   dht.begin();
 
-  // Connect to WiFi
+  // Initialize WiFi Manager
   Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
+  Serial.println("Initializing WiFi Manager...");
+  
+  if (wifiManager.begin()) {
+    Serial.println("WiFi connected successfully");
+    Serial.print("IP address: ");
+    Serial.println(wifiManager.getIPAddress());
+    
+    // Connect to AWS IoT
+    connectToAWS();
+  } else {
+    Serial.println("Failed to connect to WiFi");
   }
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  // Connect to AWS IoT
-  connectToAWS();
 
   delay(2000);
 }
 
 void loop()
 {
+  // Handle WiFi reset button
+  wifiManager.handleResetButton();
+  
   // Check WiFi and MQTT connections
   if (!mqttClient.connected())
   {
@@ -224,26 +222,23 @@ void loop()
   mqttClient.loop(); // Process incoming messages
 
   // Check WiFi connection and reconnect if needed
-  if (WiFi.status() != WL_CONNECTED)
+  if (!wifiManager.isConnected())
   {
-    Serial.println("WiFi connection lost. Reconnecting...");
-    WiFi.begin(ssid, password);
-
-    while (WiFi.status() != WL_CONNECTED)
-    {
-      delay(500);
-      Serial.print(".");
-    }
-
-    Serial.println("");
-    Serial.println("WiFi reconnected");
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
-
-    // Reconnect to AWS after WiFi reconnection
-    if (!mqttClient.connected())
-    {
-      connectToAWS();
+    Serial.println("WiFi connection lost. Attempting to reconnect...");
+    
+    // Try to reconnect using WiFiManager
+    if (wifiManager.begin()) {
+      Serial.println("WiFi reconnected");
+      Serial.print("IP address: ");
+      Serial.println(wifiManager.getIPAddress());
+      
+      // Reconnect to AWS after WiFi reconnection
+      if (!mqttClient.connected())
+      {
+        connectToAWS();
+      }
+    } else {
+      Serial.println("Failed to reconnect to WiFi");
     }
   }
 
