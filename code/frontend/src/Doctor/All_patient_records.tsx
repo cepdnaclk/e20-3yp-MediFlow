@@ -43,6 +43,7 @@ const PatientRecords = () => {
     const filtered = patients.filter(patient =>
       patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       patient.phone.includes(searchTerm) ||
+      patient.rfidCardUID.includes(searchTerm) ||
       (patient.lastDiagnosis && patient.lastDiagnosis.toLowerCase().includes(searchTerm.toLowerCase()))
     );
     setFilteredPatients(filtered);
@@ -72,9 +73,12 @@ const PatientRecords = () => {
     }
   };
 
-  const handleViewPatient = (patientId) => {
-    navigate(`/doctor/patient-profile/${patientId}`);
-  };
+  const handleViewPatient = (patientId, patientName) => {
+  // Navigate to the PatientRecordsPage with patient name as search param
+  navigate(`/doctor/patient-records`, { 
+    state: { searchTerm: patientName } 
+  });
+};
 
 
   const formatDate = (dateString) => {
@@ -248,16 +252,14 @@ const PatientRecords = () => {
                                       <Button 
                                         variant="outline" 
                                         size="sm" 
-                                        onClick={() => handleViewPatient(patient.id)}
+                                        onClick={() => handleViewPatient(patient.id, patient.rfidCardUID)}
                                         className="border border-gray-200 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 transition-colors"
                                       >
                                         <Eye className="w-3.5 h-3.5 mr-1" />
                                         View
                                       </Button>
                                     </motion.div>
-                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-500 p-1">
-                                      <MoreVertical className="w-4 h-4" />
-                                    </Button>
+                            
                                   </div>
                                 </td>
                               </motion.tr>

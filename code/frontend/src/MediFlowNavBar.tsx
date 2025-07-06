@@ -21,7 +21,7 @@ import {
 import { Avatar } from '@radix-ui/react-avatar';
 import { Button } from './components/ui/button.js';
 import { Input } from './components/ui/input.js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import AnimatedCrossLogo from './components/ui/AnimatedCrossLogo.js';
 
 const API_URL = import.meta.env.VITE_API_URL ;
@@ -33,6 +33,7 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
   const [activeItem, setActiveItem] = useState('dashboard');
   const [isLogoAnimated, setIsLogoAnimated] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
@@ -108,36 +109,41 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
   // Define role-specific menu items
   const menuItemsByRole = {
     doctor: [
-      { id: 'doc_dashboard', label: 'Dashboard', icon: BarChart2 },
-      { id: 'scan_patients', label: 'Scan Patients', icon: Users },
-      { id: 'records', label: 'Medical Records', icon: FileText },
+      { id: 'doc_dashboard', label: 'Dashboard', icon: BarChart2, path: '/doc_dashboard' },
+      { id: 'scan_patients', label: 'Scan Patients', icon: Users, path: '/scan' },
+      { id: 'records', label: 'Medical Records', icon: FileText, path: '/doctor/patient-records' },
     ],
     pharmacist: [
-      { id: 'pharm_dashboard', label: 'Dashboard', icon: BarChart2 },
-      { id: 'prescriptions', label: 'Prescriptions', icon: ClipboardList },
-      { id: 'dispensers', label: 'Dispensers', icon: Package },
-      { id: 'settings', label: 'Settings', icon: Settings },
+      { id: 'pharm_dashboard', label: 'Dashboard', icon: BarChart2, path: '/pharm_dashboard' },
+      { id: 'prescriptions', label: 'Prescriptions', icon: ClipboardList, path: '/pharmacist_prescription' },
+      { id: 'dispensers', label: 'Dispensers', icon: Package, path: '/dispensers' },
+      { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
     ],
     admin: [
-      { id: 'admin_dashboard', label: 'Dashboard', icon: BarChart2 },
-      { id: 'user_management', label: 'Users', icon: UsersIcon },
-      { id: 'roles', label: 'Roles', icon: Shield },
+      { id: 'admin_dashboard', label: 'Dashboard', icon: BarChart2, path: '/admin_dashboard' },
+      { id: 'user_management', label: 'Users', icon: UsersIcon, path: '/admin/user-management' },
+      { id: 'roles', label: 'Roles', icon: Shield, path: '/admin/roles' },
     ]
   };
 
   // Get menu items based on current role
-  const menuItems = menuItemsByRole[userRole] || menuItemsByRole.doctor;
+  const menuItems = menuItemsByRole[userRole] ;
 
-  // Set active item on role change (resets to dashboard)
+  // Update activeItem based on current location
   useEffect(() => {
-    if (userRole === 'doctor') {
-      setActiveItem('doc_dashboard');
-    } else if (userRole === 'pharmacist') {
-      setActiveItem('pharm_dashboard');
-    } else if (userRole === 'admin') {
-      setActiveItem('admin_dashboard');
+    const currentPath = location.pathname;
+    
+    // Find the menu item that matches the current path
+    const currentMenuItem = menuItems.find(item => currentPath === item.path);
+    
+    if (currentMenuItem) {
+      setActiveItem(currentMenuItem.id);
+    } else if (currentPath.includes('/scan')) {
+      setActiveItem('scan_patients');
+    } else if (currentPath.includes('/profile') || currentPath.includes('/patient-profile')) {
+      setActiveItem('records');
     }
-  }, [userRole]);
+  }, [location.pathname, menuItems]);
 
   // User info based on role (fallback)
   const userInfo = {
@@ -223,6 +229,9 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                         if (item.id === 'dispensers') {
                           navigate('/dispensers');
                         }
+                        if (item.id === 'records') {
+                              navigate('/doctor/patient-records');
+                            }
                       }}
                       whileHover={{ scale: 1.02, y: -1 }}
                       whileTap={{ scale: 0.98 }}
@@ -486,6 +495,9 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                             }
                             if (item.id === 'dispensers') {
                               navigate('/dispensers');
+                            }
+                            if (item.id === 'records') {
+                              navigate('/doctor/patient-records');
                             }
                           }}
                           whileHover={{ scale: 1.02 }}
