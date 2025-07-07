@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      postgres:
+      db:
         image: postgres:13
         env:
           POSTGRES_USER: test_user
@@ -44,7 +44,7 @@ jobs:
         working-directory: ./code/backend
         run: |
           echo "NODE_ENV=test" > .env
-          echo "DB_HOST=postgres" >> .env
+          echo "DB_HOST=db" >> .env
           echo "DB_PORT=5432" >> .env
           echo "DB_USER=test_user" >> .env
           echo "DB_PASSWORD=test_password" >> .env
