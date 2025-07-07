@@ -1,20 +1,20 @@
-# Step 1: Use a Node.js base image
-FROM node:22
+# backend/Dockerfile
+FROM node:18
 
-# Step 2: Set the working directory
+# Set working directory inside the container
 WORKDIR /app
 
-# Step 3: Copy package.json and package-lock.json
+# Copy dependency manifests
 COPY package*.json ./
 
-# Step 4: Install dependencies
+# Install all dependencies including devDependencies (like nodemon)
 RUN npm install
 
-# Step 5: Copy the rest of the app
+# Copy remaining app source code
 COPY . .
 
-# Step 6: Expose the backend port
+# Expose backend port
 EXPOSE 5000
 
-# Step 7: Start the backend app
-CMD ["npm", "start"]
+# Start development server using nodemon
+CMD ["npm", "run", "dev"]
