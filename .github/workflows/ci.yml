@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ "main"]
+    branches: [ "main","CI-test2"]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" ,"CI-test2"]
 
 jobs:
   backend:
@@ -44,11 +44,16 @@ jobs:
         working-directory: ./code/backend
         run: |
           echo "NODE_ENV=test" > .env
-          echo "DB_HOST=localhost" >> .env
+          echo "DB_HOST=postgres" >> .env
+          echo "DB_PORT=5432" >> .env
           echo "DB_USER=test_user" >> .env
           echo "DB_PASSWORD=test_password" >> .env
           echo "DB_NAME=mediflow_test" >> .env
           echo "JWT_SECRET=test_secret" >> .env
+          echo "AWS_IOT_ENDPOINT=https://test-iot-endpoint.iot.us-east-1.amazonaws.com" >> .env
+          echo "AWS_REGION=us-east-1" >> .env
+          echo "AWS_ACCESS_KEY_ID=test_key" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=test_secret" >> .env
 
       - name: Run tests
         working-directory: ./code/backend

@@ -17,7 +17,9 @@ describe("Auth API Tests", () => {
             username: "testuser",
             email: "test@example.com",
             password: "testpass",
-            role: "doctor"
+            role: "doctor",
+            nic: "123456789V",           // Added
+            licenseNumber: "DOC123456"   // Added
         });
 
         expect(res.statusCode).toBe(201);
@@ -29,7 +31,9 @@ describe("Auth API Tests", () => {
             username: "testuser",
             email: "test@example.com", // Already used email
             password: "testpass",
-            role: "doctor"
+            role: "doctor",
+            nic: "123456789V",           // Added
+            licenseNumber: "DOC123456"   // Added
         });
 
         expect(res.statusCode).toBe(400);

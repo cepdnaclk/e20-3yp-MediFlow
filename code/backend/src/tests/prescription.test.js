@@ -27,7 +27,9 @@ describe("Prescription API Tests", () => {
             username: "testdoctor",
             email: "doctor@test.com",
             password: hashedPassword,
-            role: "doctor"
+            role: "doctor",
+            nic: "123456789V",           // Added
+            licenseNumber: "DOC123456"   // Added
         });
         doctorToken = jwt.sign(
             { id: doctor.id, role: doctor.role },
@@ -39,7 +41,9 @@ describe("Prescription API Tests", () => {
             username: "testpharmacist",
             email: "pharmacist@test.com",
             password: hashedPassword,
-            role: "pharmacist"
+            role: "pharmacist",
+            nic: "987654321V",           // Added
+            licenseNumber: "PHARM123456" // Added
         });
         pharmacistToken = jwt.sign(
             { id: pharmacist.id, role: pharmacist.role },
@@ -98,11 +102,13 @@ describe("Prescription API Tests", () => {
         expect(pharmacistRes.statusCode).toBe(200);
     });
 
+    // Uncomment and adjust these tests if your API supports prescription status updates
+
     // it("should allow pharmacist to update prescription status", async () => {
     //     // First create a prescription as doctor
     //     const prescription = await request(app)
     //         .post("/api/prescriptions")
-    //         .set("Authorization", `Bearer ${pharmacistToken}`)
+    //         .set("Authorization", `Bearer ${doctorToken}`)
     //         .send({
     //             patientId: "P123456",
     //             patientName: "Test Patient",
@@ -147,5 +153,5 @@ describe("Prescription API Tests", () => {
     //         .send({ status: "dispensed" });
 
     //     expect(res.statusCode).toBe(403);
-    // });
+    //
 });
