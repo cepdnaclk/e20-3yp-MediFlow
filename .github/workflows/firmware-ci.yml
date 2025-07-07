@@ -1,23 +1,15 @@
 name: Firmware CI
 
-# on:
-#   push:
-#     branches: [ "main", "CI-test2" ]
-#     paths:
-#       - 'code/firmware/**'
-#       - '.github/workflows/firmware.yml'
-#   pull_request:
-#     branches: [ "main", "CI-test2" ]
-#     paths:
-#       - 'code/firmware/**'
-
-
 on:
   push:
     branches: [ "main", "CI-test2" ]
+    paths:
+      - 'code/firmware/**'
+      - '.github/workflows/firmware.yml'
   pull_request:
     branches: [ "main", "CI-test2" ]
-
+    paths:
+      - 'code/firmware/**'
 
 jobs:
   build:
