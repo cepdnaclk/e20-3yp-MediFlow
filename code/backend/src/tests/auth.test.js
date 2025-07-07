@@ -18,8 +18,13 @@ describe("Auth API Tests", () => {
             email: "test@example.com",
             password: "testpass",
             role: "doctor",
-            nic: "123456789V",           // Added
-            licenseNumber: "DOC123456"   // Added
+            nic: "123456789V",
+            licenseNumber: "DOC123456",
+            firstName: "John",
+            lastName: "Doe",
+            phone: "0712345678",
+            specialization: "Cardiology",
+            qualifications: "MBBS, MD"
         });
 
         expect(res.statusCode).toBe(201);
@@ -32,8 +37,13 @@ describe("Auth API Tests", () => {
             email: "test@example.com", // Already used email
             password: "testpass",
             role: "doctor",
-            nic: "123456789V",           // Added
-            licenseNumber: "DOC123456"   // Added
+            nic: "123456789V",
+            licenseNumber: "DOC123456",
+            firstName: "John",
+            lastName: "Doe",
+            phone: "0712345678",
+            specialization: "Cardiology",
+            qualifications: "MBBS, MD"
         });
 
         expect(res.statusCode).toBe(400);

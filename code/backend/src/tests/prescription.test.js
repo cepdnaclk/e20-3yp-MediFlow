@@ -28,8 +28,13 @@ describe("Prescription API Tests", () => {
             email: "doctor@test.com",
             password: hashedPassword,
             role: "doctor",
-            nic: "123456789V",           // Added
-            licenseNumber: "DOC123456"   // Added
+            nic: "123456789V",
+            licenseNumber: "DOC123456",
+            firstName: "John",
+            lastName: "Doe",
+            phone: "0712345678",
+            specialization: "Cardiology",
+            qualifications: "MBBS, MD"
         });
         doctorToken = jwt.sign(
             { id: doctor.id, role: doctor.role },
@@ -42,8 +47,13 @@ describe("Prescription API Tests", () => {
             email: "pharmacist@test.com",
             password: hashedPassword,
             role: "pharmacist",
-            nic: "987654321V",           // Added
-            licenseNumber: "PHARM123456" // Added
+            nic: "987654321V",
+            licenseNumber: "PHARM123456",
+            firstName: "Jane",
+            lastName: "Smith",
+            phone: "0723456789",
+            specialization: "Pharmacy",
+            qualifications: "BPharm"
         });
         pharmacistToken = jwt.sign(
             { id: pharmacist.id, role: pharmacist.role },
@@ -140,7 +150,7 @@ describe("Prescription API Tests", () => {
 
     // it("should not allow doctor to update prescription status", async () => {
     //     const prescription = await request(app)
-    //         .post("/api/prescriptions")
+    //         .post("/api/prescriptions")doctor
     //         .set("Authorization", `Bearer ${doctorToken}`)
     //         .send({
     //             patientId: "123",
@@ -153,5 +163,4 @@ describe("Prescription API Tests", () => {
     //         .send({ status: "dispensed" });
 
     //     expect(res.statusCode).toBe(403);
-    //
 });
