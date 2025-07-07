@@ -15,9 +15,9 @@ jobs:
       db:
         image: postgres:13
         env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: mediflow_test
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mediflow
         ports:
           - 5432:5432
         options: >-
@@ -46,9 +46,9 @@ jobs:
           echo "NODE_ENV=test" > .env
           echo "DB_HOST=db" >> .env
           echo "DB_PORT=5432" >> .env
-          echo "DB_USER=test_user" >> .env
-          echo "DB_PASSWORD=test_password" >> .env
-          echo "DB_NAME=mediflow_test" >> .env
+          echo "DB_USER=user" >> .env
+          echo "DB_PASSWORD=postgres" >> .env
+          echo "DB_NAME=mediflow" >> .env
           echo "JWT_SECRET=test_secret" >> .env
           echo "AWS_IOT_ENDPOINT=https://test-iot-endpoint.iot.us-east-1.amazonaws.com" >> .env
           echo "AWS_REGION=us-east-1" >> .env
@@ -59,7 +59,7 @@ jobs:
         working-directory: ./code/backend
         run: |
           for i in {1..10}; do
-            nc -z postgres 5432 && echo "Postgres is up" && break
+            nc -z db 5432 && echo "Postgres is up" && break
             echo "Waiting for Postgres..."
             sleep 2
           done
