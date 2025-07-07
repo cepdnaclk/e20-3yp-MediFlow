@@ -3,6 +3,16 @@ const app = require("../index");
 const sequelize = require("./config/test-db.config");
 const User = require("../models/User");
 
+// Mock the email service to capture the temp password
+jest.mock("../utils/emailService", () => {
+    return {
+        sendTemporaryPassword: jest.fn((email, tempPassword) => {
+            global.__TEMP_PASSWORD__ = tempPassword;
+            return Promise.resolve();
+        })
+    };
+});
+
 beforeAll(async () => {
     await sequelize.sync({ force: true });
 });
@@ -52,9 +62,13 @@ describe("Auth API Tests", () => {
     });
 
     it("should log in and return a JWT token", async () => {
+        // Use the captured temp password from the mock
+        const tempPassword = global.__TEMP_PASSWORD__;
+        expect(tempPassword).toBeDefined();
+
         const res = await request(app).post("/api/auth/login").send({
             email: "test@example.com",
-            password: "testpass"
+            password: tempPassword
         });
 
         expect(res.statusCode).toBe(200);
