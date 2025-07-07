@@ -54,7 +54,7 @@ jobs:
         working-directory: ./code/backend
         run: |
           echo "NODE_ENV=test" > .env
-          echo "DB_HOST=localhost" >> .env
+          echo "DB_HOST=db" >> .env
           echo "DB_PORT=5432" >> .env
           echo "DB_USER=user" >> .env
           echo "DB_PASSWORD=postgres" >> .env
@@ -68,6 +68,14 @@ jobs:
           echo "EMAIL_APP_PASSWORD=test_password" >> .env
 
 
+      - name: Debug Docker and Environment
+        run: |
+          echo "===== .env contents ====="
+          cat ./code/backend/.env || echo ".env not found"
+          echo "===== Docker ps ====="
+          docker ps
+          echo "===== Docker Compose logs (db) ====="
+          docker-compose -f ./code/docker-compose.yml logs db || echo "No db logs"
 
       - name: Wait for PostgreSQL3
         working-directory: ./code/backend
