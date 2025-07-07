@@ -7,7 +7,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=test
       - DB_HOST=db
       - DB_USER=user
       - DB_PASSWORD=postgres
