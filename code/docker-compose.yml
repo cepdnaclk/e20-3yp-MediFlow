@@ -1,4 +1,4 @@
-version: '3'
+
 
 services:
   backend:
@@ -15,6 +15,7 @@ services:
       - DB_PORT=5432
     volumes:
       - ./backend:/app
+      - /app/node_modules
     depends_on:
       - db
     restart: unless-stopped
