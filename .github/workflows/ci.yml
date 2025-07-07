@@ -67,6 +67,9 @@ jobs:
           echo "EMAIL_USER=test@example.com" >> .env
           echo "EMAIL_APP_PASSWORD=test_password" >> .env
 
+      - name: Seed database
+        working-directory: ./code/backend
+        run: npm run seed
 
       - name: Debug Docker and Environment
         run: |
@@ -85,7 +88,6 @@ jobs:
             echo "Waiting for Postgres..."
             sleep 2
           done
-      
 
       - name: Run tests
         working-directory: ./code/backend
