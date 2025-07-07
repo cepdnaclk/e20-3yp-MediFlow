@@ -16,5 +16,5 @@ COPY . .
 # Expose backend port
 EXPOSE 5000
 
-# Start development server using nodemon
-CMD ["npm", "run", "dev"]
+# Run seed before starting the dev server
+CMD npm run seed && npm run dev
