@@ -74,6 +74,24 @@ jobs:
             sleep 2
           done
 
+      - name: Wait for PostgreSQL2
+        working-directory: ./code/backend
+        run: |
+          for i in {1..10}; do
+            nc -z postgres 5432 && echo "Postgres is up" && break
+            echo "Waiting for Postgres..."
+            sleep 2
+          done
+      - name: Wait for PostgreSQL3
+        working-directory: ./code/backend
+        run: |
+          for i in {1..10}; do
+            nc -z localhost 5432 && echo "Postgres is up" && break
+            echo "Waiting for Postgres..."
+            sleep 2
+          done
+      
+
       - name: Run tests
         working-directory: ./code/backend
         run: npm test
