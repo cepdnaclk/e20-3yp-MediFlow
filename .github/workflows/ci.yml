@@ -64,6 +64,9 @@ jobs:
           echo "AWS_REGION=us-east-1" >> .env
           echo "AWS_ACCESS_KEY_ID=test_key" >> .env
           echo "AWS_SECRET_ACCESS_KEY=test_secret" >> .env
+          echo "EMAIL_USER=test@example.com" >> .env
+          echo "EMAIL_APP_PASSWORD=test_password" >> .env
+
 
 
       - name: Wait for PostgreSQL3
