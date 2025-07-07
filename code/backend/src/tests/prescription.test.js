@@ -34,7 +34,8 @@ describe("Prescription API Tests", () => {
             lastName: "Doe",
             phone: "0712345678",
             specialization: "Cardiology",
-            qualifications: "MBBS, MD"
+            qualifications: "MBBS, MD",
+            experience: 5
         });
         doctorToken = jwt.sign(
             { id: doctor.id, role: doctor.role },

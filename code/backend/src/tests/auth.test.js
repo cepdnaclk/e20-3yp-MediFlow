@@ -24,7 +24,8 @@ describe("Auth API Tests", () => {
             lastName: "Doe",
             phone: "0712345678",
             specialization: "Cardiology",
-            qualifications: "MBBS, MD"
+            qualifications: "MBBS, MD",
+            experience: 5
         });
 
         expect(res.statusCode).toBe(201);
@@ -43,7 +44,8 @@ describe("Auth API Tests", () => {
             lastName: "Doe",
             phone: "0712345678",
             specialization: "Cardiology",
-            qualifications: "MBBS, MD"
+            qualifications: "MBBS, MD",
+            experience: 5
         });
 
         expect(res.statusCode).toBe(400);
