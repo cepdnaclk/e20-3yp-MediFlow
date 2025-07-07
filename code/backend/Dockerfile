@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 5000
 
 # Step 7: Start the backend app
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
