@@ -303,6 +303,13 @@
     transition: .5s;
 }
 
+.team-item .img-fluid {
+    width: 100%;
+    height: 300px;         
+    object-fit: cover;     
+    object-position: center top;
+}
+
 .team-item:hover img {
     top: -30px;
 }
@@ -516,4 +523,20 @@
 
 .footer .copyright a:hover {
     color: var(--primary);
+}
+.text-meet {
+    font-size: 2rem;
+    color: #6c757d; /* muted gray */
+    text-transform: uppercase;
+    letter-spacing: 0.25rem;
+    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.text-devgru {
+    color: #0463FA;
+    font-size: 3rem;
+    font-weight: 900;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
 }
