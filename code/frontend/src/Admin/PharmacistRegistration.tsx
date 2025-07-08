@@ -1,10 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Database, ArrowLeft, CheckCircle, Upload, X, Pill, BadgeCheck, User, Phone, Mail, Lock, Briefcase, CreditCard } from 'lucide-react';
+import { Database, ArrowLeft, CheckCircle, Upload, X, Pill, BadgeCheck, User, Phone, Mail, Lock, Briefcase, CreditCard, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card.js';
 import { Button } from '../components/ui/button.js';
 import { useNavigate } from 'react-router-dom';
-const API_URL = import.meta.env.REACT_APP_API_URL;
 
 const PharmacistRegistration = () => {
   const navigate = useNavigate();
@@ -18,12 +17,12 @@ const PharmacistRegistration = () => {
     licenseNumber: '',
     workExperience: '',
     pharmacyName: '',
-    username: '',
-    password: '',
-    confirmPassword: ''
+    username: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [photoPreview, setPhotoPreview] = useState(null);
   const fileInputRef = useRef(null);
   
@@ -53,68 +52,81 @@ const PharmacistRegistration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Validate the form data
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match");
-      setIsSubmitting(false);
-      return;
-    }
+    setErrorMessage('');
+    setSuccessMessage('');
     
     try {
-      // In a real app, include the photo data
-      const pharmacistData = {
-        ...formData,
-        photo: photoPreview
+      // Get the API URL from environment variable or use a default
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      // Prepare the data to send to your API
+      const dataToSend = {
+        username: formData.username,
+        email: formData.email,
+        // Explicitly set role to pharmacist
+        role: "pharmacist",
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        nic: formData.nic,
+        phone: formData.phone,
+        specialization: formData.specialization,
+        licenseNumber: formData.licenseNumber,
+        workExperience: formData.workExperience,
+        pharmacyName: formData.pharmacyName
       };
       
-      // Make API call to register pharmacist
-      // Replace with your actual API endpoint
-      const response = await fetch('${API_URL}/api/auth/register', {
+      console.log("Sending pharmacist registration data:", dataToSend);
+      
+      // Get token from localStorage for authentication
+      const token = localStorage.getItem('token');
+      
+      // Make the actual API call
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': token ? `Bearer ${token}` : ''
         },
-        body: JSON.stringify({
-          ...pharmacistData,
-          role: 'pharmacist'
-        })
+        body: JSON.stringify(dataToSend)
       });
       
-      if (response.ok) {
-        setIsSuccess(true);
-        // Reset form
-        setFormData({
-          firstName: '',
-          lastName: '',
-          nic: '',
-          email: '',
-          phone: '',
-          specialization: '',
-          licenseNumber: '',
-          workExperience: '',
-          pharmacyName: '',
-          username:'',
-          password: '',
-          confirmPassword: ''
-        });
-        setPhotoPreview(null);
-        
-        // Show success message for 2 seconds then navigate back
-        setTimeout(() => {
-          navigate('/admin_dashboard');
-        }, 2000);
-      } else {
-        const errorData = await response.json();
-        alert(`Registration failed: ${errorData.message}`);
+      // Parse the response
+      const data = await response.json();
+      
+      // Check if the request was successful
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to register pharmacist');
       }
+      
+      setSuccessMessage(`${formData.firstName} ${formData.lastName} registered successfully! A temporary password has been sent to their email.`);
+      setIsSuccess(true);
+      
+      // Reset the form
+      setFormData({
+        firstName: '',
+        lastName: '',
+        nic: '',
+        email: '',
+        phone: '',
+        specialization: '',
+        licenseNumber: '',
+        workExperience: '',
+        pharmacyName: '',
+        username: ''
+      });
+      setPhotoPreview(null);
+
+      // Show success message for 2 seconds then navigate back
+      setTimeout(() => {
+        navigate('/register-pharmacist');
+      }, 2000);
+      
     } catch (error) {
       console.error('Error registering pharmacist:', error);
-      alert('Failed to register pharmacist. Please try again.');
+      setErrorMessage(error.message || 'An error occurred while registering the pharmacist');
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
   
   return (
@@ -149,6 +161,28 @@ const PharmacistRegistration = () => {
           </div>
           
           <div className="px-6 py-8 sm:px-10">
+            {successMessage && (
+              <motion.div 
+                className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 flex items-center"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <span className="flex-shrink-0 mr-2">✓</span>
+                {successMessage}
+              </motion.div>
+            )}
+            
+            {errorMessage && (
+              <motion.div 
+                className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+                {errorMessage}
+              </motion.div>
+            )}
+
             {isSuccess ? (
               <div className="text-center py-12">
                 <motion.div
@@ -288,6 +322,23 @@ const PharmacistRegistration = () => {
                         </div>
                       </div>
                     </div>
+                    
+                    <div className="space-y-1">
+                      <label className="block text-sm font-medium text-gray-700">Username <span className="text-red-500">*</span></label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          name="username"
+                          value={formData.username}
+                          onChange={handleChange}
+                          required
+                          className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                        />
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                          <User className="h-4 w-4 text-gray-400" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
@@ -420,70 +471,11 @@ const PharmacistRegistration = () => {
                   </div>
                 </div>
                 
-                {/* Security Section */}
-                {/* Account Credentials Section */}
-                <div>
-                <div className="flex items-center space-x-2 border-b border-gray-200 pb-2 mb-4">
-                    <Lock className="h-5 w-5 text-purple-500" />
-                    <h2 className="text-lg font-semibold text-gray-800">Account Credentials</h2>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-1">
-                    <label className="block text-sm font-medium text-gray-700">Username <span className="text-red-500">*</span></label>
-                    <div className="relative">
-                        <input
-                        type="text"
-                        name="username"
-                        value={formData.username}
-                        onChange={handleChange}
-                        required
-                        className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                        />
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <User className="h-4 w-4 text-gray-400" />
-                        </div>
-                    </div>
-                    </div>
-
-                    <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Password <span className="text-red-500">*</span></label>
-                        <div className="relative">
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            minLength={6}
-                            className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                        />
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <Lock className="h-4 w-4 text-gray-400" />
-                        </div>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Password must be at least 6 characters</p>
-                    </div>
-                    
-                    <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Confirm Password <span className="text-red-500">*</span></label>
-                        <div className="relative">
-                        <input
-                            type="password"
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            required
-                            className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                        />
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <Lock className="h-4 w-4 text-gray-400" />
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-                </div>
+                <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
+                  <p className="text-sm text-blue-700">
+                    <strong>Note:</strong> A temporary password will be automatically generated and sent to the pharmacist's email. 
+                    They will be required to change this password when they first log in.
+                  </p>
                 </div>
                 
                 <div className="pt-6">

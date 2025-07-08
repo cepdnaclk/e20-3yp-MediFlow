@@ -14,29 +14,95 @@ const PasswordReset = () => {
   const [particles, setParticles] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
   
-  // New state variables for token-based reset
+  // State variables for token-based reset
   const [isTokenReset, setIsTokenReset] = useState(false);
   const [resetToken, setResetToken] = useState('');
   const [userId, setUserId] = useState('');
 
-  // Check if this is a token-based reset or a normal reset
-  useEffect(() => {
-    const token = localStorage.getItem('resetToken');
-    const storedUserId = localStorage.getItem('resetUserId');
+  // Handle logout function
+  const handleLogout = () => {
+    // Clear all authentication data
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    localStorage.removeItem('resetToken');
+    localStorage.removeItem('resetUserId');
     
-    if (token && storedUserId) {
-      setIsTokenReset(true);
-      setResetToken(token);
-      setUserId(storedUserId);
-    }
+    // Navigate to login
+    navigate('/login');
+  };
+
+  // Prevent going back to the previous page
+  useEffect(() => {
+    // Push a new entry to history to prevent immediate back navigation
+    window.history.pushState(null, '', window.location.href);
+    
+    const handlePopState = () => {
+      // When back button is clicked, push another state to prevent going back
+      window.history.pushState(null, '', window.location.href);
+      
+      // Show message to user
+      setError('You must reset your password before continuing. Click "Sign out instead" if you want to log out.');
+    };
+    
+    // Listen for back button clicks
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 
+  // Check authentication and determine reset type
+  useEffect(() => {
+    // Check sessionStorage first (for temporary password logins)
+    const sessionUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+    const sessionToken = sessionStorage.getItem('token');
+    
+    // Then check localStorage (for normal users or forgot password flow)
+    const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const localToken = localStorage.getItem('token');
+    
+    // For debugging
+    console.log('=== DEBUGGING storage ===');
+    console.log('sessionStorage user:', sessionUser);
+    console.log('sessionStorage token:', sessionToken);
+    console.log('localStorage user:', localUser);
+    console.log('localStorage token:', localToken);
+    
+    // Check for token-based reset (forgot password)
+    const resetToken = localStorage.getItem('resetToken');
+    const storedUserId = localStorage.getItem('resetUserId');
+    
+    // Check various authentication scenarios
+    if (sessionUser.passwordResetRequired && sessionToken) {
+      // 1. Temporary password in session storage (highest priority)
+      console.log('>>> Taking temporary password reset path (session storage)');
+      setIsTokenReset(false);
+    } else if (resetToken && storedUserId) {
+      // 2. Token-based reset from forgot password flow
+      console.log('>>> Taking token-based reset path (forgot password)');
+      setIsTokenReset(true);
+      setResetToken(resetToken);
+      setUserId(storedUserId);
+    } else if (localUser.passwordResetRequired && localToken) {
+      // 3. Password reset required in local storage (should be rare)
+      console.log('>>> Taking password reset path (local storage)');
+      setIsTokenReset(false);
+    } else {
+      // No valid authentication scenario for password reset
+      console.log('>>> No valid reset scenario found, redirecting to login');
+      navigate('/login');
+    }
+  }, [navigate]);
+  
   // Generate random curved strings across the screen
   useEffect(() => {
     const generatedStrings = [];
     const generatedParticles = [];
     
-    // Generate 8 strings
+    // Generate strings
     for (let i = 0; i < 13; i++) {
       const startY = Math.random() * window.innerHeight;
       const endY = Math.random() * window.innerHeight;
@@ -120,7 +186,7 @@ const PasswordReset = () => {
       let response;
       
       if (isTokenReset) {
-        // Reset with token (no auth required)
+        // Reset with token from email link (forgot password flow)
         response = await fetch(`${API_URL}/api/password/reset-with-token`, {
           method: 'POST',
           headers: {
@@ -132,13 +198,14 @@ const PasswordReset = () => {
           })
         });
       } else {
-        // Normal authenticated reset
-        const token = localStorage.getItem('token');
-        const userId = JSON.parse(localStorage.getItem('user'))?.id;
-
-        if (!token || !userId) {
-          setError('You must be logged in to reset your password');
+        // First-time login reset with JWT token
+        // Check both sessionStorage and localStorage
+        const jwtToken = sessionStorage.getItem('token') || localStorage.getItem('token');
+        
+        if (!jwtToken) {
+          setError('Authentication token not found. Please log in again.');
           setLoading(false);
+          navigate('/login');
           return;
         }
 
@@ -146,9 +213,12 @@ const PasswordReset = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${jwtToken}`
           },
-          body: JSON.stringify({ userId, newPassword })
+          body: JSON.stringify({ 
+            token: jwtToken,
+            newPassword 
+          })
         });
       }
 
@@ -157,26 +227,48 @@ const PasswordReset = () => {
         throw new Error(data.message || 'Failed to reset password');
       }
 
+      const data = await response.json();
       setSuccess(true);
       
       if (isTokenReset) {
-        // Clean up localStorage
+        // Clean up localStorage for token-based reset
         localStorage.removeItem('resetToken');
         localStorage.removeItem('resetUserId');
         setSuccessMessage('Password reset successfully! You will be redirected to login in a moment.');
-      } else {
-        setSuccessMessage('Password reset successfully! You will be logged out in a moment.');
-      }
-      
-      // Timeout before logout/redirect
-      setTimeout(() => {
-        // Clear user data and token from localStorage (logout)
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
         
-        // Redirect to login page
-        navigate('/login');
-      }, 2000);
+        // Timeout before redirect to login
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } else {
+        // For first-time login reset
+        if (data.user) {
+          // Move from sessionStorage to localStorage (password is now permanent)
+          localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('token', sessionStorage.getItem('token') || localStorage.getItem('token'));
+          
+          // Clear sessionStorage
+          sessionStorage.removeItem('user');
+          sessionStorage.removeItem('token');
+        }
+        
+        setSuccessMessage('Password reset successfully! You will be redirected to your dashboard in a moment.');
+        
+        // Timeout before redirect to dashboard
+        setTimeout(() => {
+          const user = data.user || JSON.parse(localStorage.getItem('user') || '{}');
+          
+          if (user.role === 'admin') {
+            navigate('/admin_dashboard');
+          } else if (user.role === 'doctor') {
+            navigate('/doc_dashboard');
+          } else if (user.role === 'pharmacist') {
+            navigate('/pharm_dashboard');
+          } else {
+            navigate('/login');
+          }
+        }, 2000);
+      }
     } catch (err) {
       setError(err.message || 'An error occurred while resetting your password');
     } finally {
@@ -227,7 +319,7 @@ const PasswordReset = () => {
       </svg>
       
       {/* Reset Password Box - Styled like login box */}
-      <div className="z-10 w-100 bg-opacity-5 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-purple-200 border-opacity-10">
+      <div className="z-10 w-120 bg-opacity-5 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-purple-200 border-opacity-10">
         <div className="flex items-center mb-6 justify-center">
           <div className="mr-4 bg-purple-900 bg-opacity-10 p-2 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-15 w-15 text-blue-300" viewBox="0 0 20 20" fill="currentColor">
@@ -238,8 +330,8 @@ const PasswordReset = () => {
             <h2 className="text-4xl text-white font-bold mb-1">Reset Password</h2>
             <p className="text-purple-200">
               {isTokenReset 
-                ? "Create your new password" 
-                : "Create a new secure password"}
+                ? "Create your new password from the email link" 
+                : "Create a new secure password for your first login"}
             </p>
           </div>
         </div>
@@ -252,7 +344,7 @@ const PasswordReset = () => {
         {/* Success Message */}
         {success && (
         <div className="mb-4 p-3 bg-green-900 bg-opacity-20 border border-green-400 border-opacity-20 rounded-lg text-green-200 text-sm">
-            {successMessage || 'Password reset successfully! Logging out...'}
+            {successMessage || 'Password reset successfully! Redirecting...'}
         </div>
         )}
         
@@ -319,6 +411,15 @@ const PasswordReset = () => {
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
           >
             {loading ? 'Resetting...' : 'Reset Password'}
+          </button>
+          
+          {/* Sign Out Button */}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full mt-2 flex justify-center py-3 px-4 border border-red-500 rounded-lg shadow-sm text-sm font-medium text-white bg-transparent hover:bg-red-500 hover:bg-opacity-10 focus:outline-none"
+          >
+            Sign out instead
           </button>
         </form>
 

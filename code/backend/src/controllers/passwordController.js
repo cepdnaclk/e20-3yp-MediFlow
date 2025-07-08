@@ -3,26 +3,41 @@ const bcrypt = require('bcryptjs');
 const crypto = require('node:crypto'); // Use explicit node: prefix
 const { Op } = require('sequelize');
 const { sendPasswordResetEmail } = require('../utils/emailService');
+const jwt = require('jsonwebtoken');
 
 // Reset password after first login
 exports.resetPassword = async (req, res) => {
     try {
-        const { userId, newPassword } = req.body;
+        console.log('Reset password request body:', req.body);
+        
+        const { token, newPassword } = req.body; // Changed from userId to token
         
         // Validate input
-        if (!userId || !newPassword) {
-            return res.status(400).json({ message: "User ID and new password are required" });
+        if (!token || !newPassword) {
+            return res.status(400).json({ message: "Token and new password are required" });
         }
         
-        // Find the user
-        const user = await User.findByPk(userId);
+        // Verify the JWT token
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+            console.log('JWT decoded:', decoded);
+        } catch (jwtError) {
+            console.error('JWT verification error:', jwtError);
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+        
+        // Find the user using the decoded token ID
+        const user = await User.findByPk(decoded.id);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
         
-        // Make sure the user is the one making the request
-        if (user.id !== req.user.id) {
-            return res.status(403).json({ message: "Unauthorized to reset this password" });
+        console.log('User found:', user.email, 'passwordResetRequired:', user.passwordResetRequired);
+        
+        // Check if password reset is required
+        if (!user.passwordResetRequired) {
+            return res.status(400).json({ message: "Password reset is not required for this user" });
         }
         
         // Hash the new password
@@ -34,7 +49,18 @@ exports.resetPassword = async (req, res) => {
             passwordResetRequired: false
         });
         
-        res.status(200).json({ message: "Password reset successful" });
+        console.log("Password reset successful for user:", user.email);
+        
+        res.status(200).json({ 
+            message: "Password reset successful",
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                passwordResetRequired: false
+            }
+        });
     } catch (error) {
         console.error("Error resetting password:", error);
         res.status(500).json({ message: "Error resetting password", error: error.message });

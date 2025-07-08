@@ -30,8 +30,8 @@ const AnimatedCrossLogo = ({ isLogoAnimated, setIsLogoAnimated }) => {
           strokeOpacity="0.3"
           fill="transparent"
           animate={{
-            r: [14, 16, 14],
-            opacity: [0.3, 0.1, 0.3],
+            strokeOpacity: [0.3, 0.1, 0.3],
+            scale: [1, 1.14, 1],
           }}
           transition={{
             duration: 4,
@@ -49,8 +49,8 @@ const AnimatedCrossLogo = ({ isLogoAnimated, setIsLogoAnimated }) => {
           strokeOpacity="0.2"
           fill="transparent"
           animate={{
-            r: [15, 18, 15],
-            opacity: [0.2, 0, 0.2],
+            strokeOpacity: [0.2, 0, 0.2],
+            scale: [1, 1.2, 1],
           }}
           transition={{
             duration: 5,

@@ -11,6 +11,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import DoctorDashboardHeader from './Doctor/Doctor_DashboardHeader.js';
 import PharmacistPrescription from './Pharmacist/Pharmacist_prescription.js';
 import PatientRecords from './Doctor/All_patient_records.js';
+import PatientRecordsPage from './Doctor/PatientRecordsPage.js';
 import AdminDashboard from './Admin/AdminDashboard.js';
 import DoctorRegistration from './Admin/DoctorRegistration';
 import PatientRegistration from './Admin/PatientRegistration';
@@ -92,6 +93,22 @@ const AppContent = ({ user, setUser }) => {
           element={
             <ProtectedRoute allowedRoles={['doctor']}>
               <RFIDScanPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/doctor/patient-records" 
+          element={
+            <ProtectedRoute allowedRoles={['doctor']}>
+              <PatientRecordsPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/doctor/patient-profile/:patientId" 
+          element={
+            <ProtectedRoute allowedRoles={['doctor']}>
+              <PatientProfile />
             </ProtectedRoute>
           } 
         />
