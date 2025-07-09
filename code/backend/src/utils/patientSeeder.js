@@ -27,7 +27,7 @@ async function seedPatients() {
         medicalConditions: 'Hypertension',
         height: 175,
         weight: 70,
-        rfidCardUID: '0087940249', // RFID card UID for scanning
+        rfidCardUID: '0773935943', // RFID card UID for scanning
         nic: '900515123V',
         cardStatus: 'active'
       },
