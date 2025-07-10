@@ -1,12 +1,21 @@
 const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize({
-    dialect: 'sqlite',
-    storage: ':memory:',
-    logging: false,
-    define: {
-        timestamps: true
+// Load environment variables from .env if not already loaded
+require('dotenv').config();
+
+const sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
+    {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        dialect: 'postgres',
+        logging: false,
+        define: {
+            timestamps: true
+        }
     }
-});
+);
 
 module.exports = sequelize;

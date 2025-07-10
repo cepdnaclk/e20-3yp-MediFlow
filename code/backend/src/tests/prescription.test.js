@@ -4,6 +4,7 @@ const sequelize = require("./config/test-db.config");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const { v4: uuidv4 } = require("uuid");
 
 beforeAll(async () => {
     await sequelize.sync({ force: true });
@@ -16,6 +17,7 @@ afterAll(async () => {
 describe("Prescription API Tests", () => {
     let doctorToken;
     let pharmacistToken;
+    let testPatientId;
 
     beforeEach(async () => {
         // Clear users before each test
@@ -27,19 +29,37 @@ describe("Prescription API Tests", () => {
             username: "testdoctor",
             email: "doctor@test.com",
             password: hashedPassword,
-            role: "doctor"
+            role: "doctor",
+            nic: "123456789V",
+            licenseNumber: "DOC123456",
+            firstName: "John",
+            lastName: "Doe",
+            phone: "0712345678",
+            specialization: "Cardiology",
+            qualifications: "MBBS, MD",
+            experience: 5
         });
         doctorToken = jwt.sign(
             { id: doctor.id, role: doctor.role },
             process.env.JWT_SECRET
         );
 
+        // Create a test patient UUID for prescriptions
+        testPatientId = uuidv4();
+
         // Create a test pharmacist
         const pharmacist = await User.create({
             username: "testpharmacist",
             email: "pharmacist@test.com",
             password: hashedPassword,
-            role: "pharmacist"
+            role: "pharmacist",
+            nic: "987654321V",
+            licenseNumber: "PHARM123456",
+            firstName: "Jane",
+            lastName: "Smith",
+            phone: "0723456789",
+            specialization: "Pharmacy",
+            qualifications: "BPharm"
         });
         pharmacistToken = jwt.sign(
             { id: pharmacist.id, role: pharmacist.role },
@@ -52,7 +72,7 @@ describe("Prescription API Tests", () => {
             .post("/api/prescriptions")
             .set("Authorization", `Bearer ${doctorToken}`)
             .send({
-                patientId: "P123456",
+                patientId: testPatientId, // Use a valid UUID
                 patientName: "Test Patient",
                 age: 45,
                 allergies: ["None"],
@@ -78,14 +98,51 @@ describe("Prescription API Tests", () => {
             .post("/api/prescriptions")
             .set("Authorization", `Bearer ${pharmacistToken}`)
             .send({
-                patientId: "123",
-                medicines: ["med1", "med2"]
+                patientId: testPatientId,
+                patientName: "Test Patient",
+                age: 45,
+                allergies: ["None"],
+                diagnosis: "Test Diagnosis",
+                prescriptionDate: new Date().toISOString().split('T')[0],
+                medicines: [
+                    {
+                        id: 1,
+                        name: "Test Medicine",
+                        dosage: "250mg",
+                        frequency: "Twice daily",
+                        duration: "7 days",
+                        quantity: 14
+                    }
+                ]
             });
 
         expect(res.statusCode).toBe(403);
     });
 
     it("should allow both doctor and pharmacist to view prescriptions", async () => {
+        // First, create a prescription as doctor
+        await request(app)
+            .post("/api/prescriptions")
+            .set("Authorization", `Bearer ${doctorToken}`)
+            .send({
+                patientId: testPatientId,
+                patientName: "Test Patient",
+                age: 45,
+                allergies: ["None"],
+                diagnosis: "Test Diagnosis",
+                prescriptionDate: new Date().toISOString().split('T')[0],
+                medicines: [
+                    {
+                        id: 1,
+                        name: "Test Medicine",
+                        dosage: "250mg",
+                        frequency: "Twice daily",
+                        duration: "7 days",
+                        quantity: 14
+                    }
+                ]
+            });
+
         const doctorRes = await request(app)
             .get("/api/prescriptions")
             .set("Authorization", `Bearer ${doctorToken}`);
@@ -98,13 +155,15 @@ describe("Prescription API Tests", () => {
         expect(pharmacistRes.statusCode).toBe(200);
     });
 
+    // Uncomment and adjust these tests if your API supports prescription status updates
+
     // it("should allow pharmacist to update prescription status", async () => {
     //     // First create a prescription as doctor
     //     const prescription = await request(app)
     //         .post("/api/prescriptions")
-    //         .set("Authorization", `Bearer ${pharmacistToken}`)
+    //         .set("Authorization", `Bearer ${doctorToken}`)
     //         .send({
-    //             patientId: "P123456",
+    //             patientId: testPatientId,
     //             patientName: "Test Patient",
     //             age: 45,
     //             allergies: ["None"],
@@ -137,8 +196,22 @@ describe("Prescription API Tests", () => {
     //         .post("/api/prescriptions")
     //         .set("Authorization", `Bearer ${doctorToken}`)
     //         .send({
-    //             patientId: "123",
-    //             medicines: ["med1", "med2"]
+    //             patientId: testPatientId,
+    //             patientName: "Test Patient",
+    //             age: 45,
+    //             allergies: ["None"],
+    //             diagnosis: "Test Diagnosis",
+    //             prescriptionDate: new Date().toISOString().split('T')[0],
+    //             medicines: [
+    //                 {
+    //                     id: 1,
+    //                     name: "Test Medicine",
+    //                     dosage: "250mg",
+    //                     frequency: "Twice daily",
+    //                     duration: "7 days",
+    //                     quantity: 14
+    //                 }
+    //             ]
     //         });
 
     //     const res = await request(app)
@@ -147,5 +220,4 @@ describe("Prescription API Tests", () => {
     //         .send({ status: "dispensed" });
 
     //     expect(res.statusCode).toBe(403);
-    // });
-});
+    });
