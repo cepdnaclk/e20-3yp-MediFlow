@@ -75,7 +75,7 @@ async function seedDb() {
       // Create corresponding doctor record
       await Doctor.create({
         userId: doctorUser.id,
-        firstName: 'Dr. John',
+        firstName: 'John',
         lastName: 'Smith',
         nic: '987654321V',
         phone: '0772345678',
