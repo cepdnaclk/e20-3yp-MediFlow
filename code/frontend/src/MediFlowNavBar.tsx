@@ -121,7 +121,7 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
     ],
     admin: [
       { id: 'admin_dashboard', label: 'Dashboard', icon: BarChart2, path: '/admin_dashboard' },
-      { id: 'user_management', label: 'Users', icon: UsersIcon, path: '/admin/user-management' },
+      { id: 'user_management', label: 'Users', icon: UsersIcon, path: '/admin/users' },
       { id: 'roles', label: 'Roles', icon: Shield, path: '/admin/roles' },
     ]
   };
@@ -228,6 +228,9 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                         }
                         if (item.id === 'dispensers') {
                           navigate('/dispensers');
+                        }
+                        if (item.id === 'user_management') {
+                          navigate('/admin/users');
                         }
                         if (item.id === 'records') {
                               navigate('/doctor/patient-records');

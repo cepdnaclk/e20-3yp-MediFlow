@@ -2,32 +2,42 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ "main"]
+    branches: [ "main", "CI-test2" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "CI-test2" ]
 
 jobs:
   backend:
     name: Backend Tests
     runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: mediflow_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+
+    # services:
+    #   db:
+    #     image: postgres:13
+    #     env:
+    #       POSTGRES_USER: user
+    #       POSTGRES_PASSWORD: postgres
+    #       POSTGRES_DB: mediflow
+    #     ports:
+    #       - 5432:5432
+    #     options: >-
+    #       --health-cmd pg_isready
+    #       --health-interval 10s
+    #       --health-timeout 5s
+    #       --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose version
+
+      - name: Build and run with Docker Compose
+        working-directory: ./code
+        run: docker-compose up -d --build
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -45,10 +55,39 @@ jobs:
         run: |
           echo "NODE_ENV=test" > .env
           echo "DB_HOST=localhost" >> .env
-          echo "DB_USER=test_user" >> .env
-          echo "DB_PASSWORD=test_password" >> .env
-          echo "DB_NAME=mediflow_test" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "DB_USER=user" >> .env
+          echo "DB_PASSWORD=postgres" >> .env
+          echo "DB_NAME=mediflow" >> .env
           echo "JWT_SECRET=test_secret" >> .env
+          echo "AWS_IOT_ENDPOINT=https://test-iot-endpoint.iot.us-east-1.amazonaws.com" >> .env
+          echo "AWS_REGION=us-east-1" >> .env
+          echo "AWS_ACCESS_KEY_ID=test_key" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=test_secret" >> .env
+          echo "EMAIL_USER=test@example.com" >> .env
+          echo "EMAIL_APP_PASSWORD=test_password" >> .env
+
+      - name: Seed database
+        working-directory: ./code/backend
+        run: npm run seed
+
+      - name: Debug Docker and Environment
+        run: |
+          echo "===== .env contents ====="
+          cat ./code/backend/.env || echo ".env not found"
+          echo "===== Docker ps ====="
+          docker ps
+          echo "===== Docker Compose logs (db) ====="
+          docker-compose -f ./code/docker-compose.yml logs db || echo "No db logs"
+
+      - name: Wait for PostgreSQL3
+        working-directory: ./code/backend
+        run: |
+          for i in {1..10}; do
+            nc -z localhost 5432 && echo "Postgres is up" && break
+            echo "Waiting for Postgres..."
+            sleep 2
+          done
 
       - name: Run tests
         working-directory: ./code/backend
@@ -91,5 +130,5 @@ jobs:
         if: github.event_name != 'act'
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-dist
-          path: code/frontend/dist/
+          name: frontend-build
+          path: ./code/frontend/dist

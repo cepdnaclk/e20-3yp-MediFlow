@@ -50,6 +50,10 @@
       "!src/utils/flushDb.js"
     ],
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "clover"]
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "clover"
+    ]
   }
 }

@@ -1,0 +1,60 @@
+name: Deploy MediFlow to AWS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Build React frontend
+        run: |
+          cd code/frontend
+          npm install
+          npm run build
+
+      - name: Confirm build output
+        run: ls -la code/frontend/dist
+
+      - name: Clear target directory on EC2
+        uses: appleboy/ssh-action@master
+        with:
+            host: ${{ secrets.HOST }}
+            username: ${{ secrets.USER }}
+            key: ${{ secrets.SSH_KEY }}
+            script: |
+                sudo rm -rf /var/www/mediflow-app/*
+
+      - name: Upload frontend to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "code/frontend/dist"
+          target: "/var/www/mediflow-app"
+          strip_components: 3
+
+      - name: Deploy backend via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ~/e20-3yp-MediFlow/code/backend
+            git config pull.rebase false
+            git pull origin main
+            npm install
+            pm2 reload ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
