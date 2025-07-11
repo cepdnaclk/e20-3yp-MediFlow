@@ -5,6 +5,10 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
+<<<<<<< HEAD
+=======
+const Prescription = require("../models/Prescription");
+>>>>>>> CI-test2
 
 beforeAll(async () => {
     await sequelize.sync({ force: true });
@@ -21,7 +25,9 @@ describe("Prescription API Tests", () => {
 
     beforeEach(async () => {
         // Clear users before each test
-        await User.destroy({ truncate: true });
+
+        await Prescription.destroy({ truncate: true, cascade: true });
+        await User.destroy({ truncate: true, cascade: true });
 
         // Create a test doctor
         const hashedPassword = await bcrypt.hash("password", 10);
