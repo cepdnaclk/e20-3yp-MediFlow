@@ -17,6 +17,7 @@ import DoctorRegistration from './Admin/DoctorRegistration';
 import PatientRegistration from './Admin/PatientRegistration';
 import PharmacistRegistration from './Admin/PharmacistRegistration';
 import AdminRegistration from './Admin/AdminRegistration';
+import UserManagement from './Admin/UserManagement';
 import ProtectedRoute from './components/ProtectedRoutes';
 
 // Import password reset components
@@ -119,6 +120,14 @@ const AppContent = ({ user, setUser }) => {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/users" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <UserManagement />
             </ProtectedRoute>
           } 
         />
