@@ -8,6 +8,7 @@ const checkRole = require('../middleware/checkRole'); // Fixed import path
 router.post('/', authMiddleware, checkRole(['doctor']), prescriptionController.createPrescription);
 router.get('/', authMiddleware, checkRole(['doctor', 'pharmacist']), prescriptionController.getPrescriptions);
 router.put('/:prescriptionId/status', authMiddleware, checkRole(['pharmacist']), prescriptionController.updatePrescriptionStatus);
+router.get('/today', authMiddleware, checkRole(['pharmacist']), prescriptionController.getTodaysPrescriptions);
 
 // New route for patient prescriptions
 router.get("/patient/:patientId", authMiddleware, checkRole(["doctor", "pharmacist"]), prescriptionController.getPatientPrescriptions);
