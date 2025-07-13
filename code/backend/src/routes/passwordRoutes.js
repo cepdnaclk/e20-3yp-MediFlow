@@ -8,6 +8,7 @@ const {
 } = require('../controllers/passwordController');
 const authMiddleware = require('../middleware/authMiddleware');
 const { Op } = require('sequelize');
+const router = express.Router();
 
 const rateLimit = require('express-rate-limit');
 
@@ -24,7 +25,7 @@ const limiter = rateLimit({
 
 router.use(limiter);
 
-const router = express.Router();
+
 
 // Reset password after first login (requires authentication)
 router.post('/reset', authMiddleware, resetPassword);

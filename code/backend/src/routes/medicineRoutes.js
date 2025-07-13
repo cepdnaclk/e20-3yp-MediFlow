@@ -1,6 +1,7 @@
 const express = require('express');
 const Medicine = require('../models/Medicine');
 const authMiddleware = require('../middleware/authMiddleware');
+const router = express.Router();
 
 const rateLimit = require('express-rate-limit');
 
@@ -17,7 +18,7 @@ const limiter = rateLimit({
 
 router.use(limiter);
 
-const router = express.Router();
+
 
 // GET all active medicines
 router.get('/', authMiddleware, async (req, res) => {

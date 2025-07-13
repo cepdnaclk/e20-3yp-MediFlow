@@ -3,6 +3,7 @@ const { getDoctorPatients } = require('../controllers/doctorController');
 const { getAllDoctorPatients } = require('../controllers/doctorController');
 const authMiddleware = require('../middleware/authMiddleware');
 const checkRole = require('../middleware/checkRole');
+const router = express.Router();
 
 const rateLimit = require('express-rate-limit');
 
@@ -19,7 +20,7 @@ const limiter = rateLimit({
 
 router.use(limiter);
 
-const router = express.Router();
+
 
 // Get patients for logged-in doctor
 router.get('/patients', authMiddleware, checkRole(['doctor']), getDoctorPatients);
