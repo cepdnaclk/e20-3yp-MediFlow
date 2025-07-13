@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import AIAssistant from '../components/ui/AIAssistant';
+// import AIAssistant from '../components/ui/AIAssistant';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -288,7 +288,7 @@ const PatientProfile: React.FC = () => {
         </motion.div>
 
         {/* AI Assistant Component */}
-        {patientId && <AIAssistant patientId={patientId} apiUrl={API_URL} />}
+        {/* {patientId && <AIAssistant patientId={patientId} apiUrl={API_URL} />} */}
 
         {/* New Prescription Form Card */}
         <motion.div 
