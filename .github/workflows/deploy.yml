@@ -54,7 +54,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd ~/e20-3yp-MediFlow/code/backend
-            git config pull.rebase false
-            git pull origin main
+            git fetch origin
+            git reset --hard origin/main
             npm install
             pm2 reload ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
