@@ -1,5 +1,9 @@
 # 🩺 MediFlow - Smart Medicine Dispenser System
 
+<div align="center">
+  <img src="docs/img/logo.png" alt="MediFlow Logo" width="200"/>
+</div>
+
 ## 📝 Project Overview
 
 MediFlow is a smart medicine dispenser system developed to improve efficiency and reliability in hospital pharmacies. It integrates a web-based software system with IoT-enabled hardware to automate the dispensing of common medicines, reducing queues and manual errors.
