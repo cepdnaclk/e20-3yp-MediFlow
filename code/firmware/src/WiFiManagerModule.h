@@ -26,7 +26,7 @@
 #include <WiFiManager.h>
 
 // Configuration
-#define RESET_BUTTON_PIN 14
+#define RESET_BUTTON_PIN 4
 #define RESET_HOLD_TIME 5000  // 5 seconds
 #define AP_NAME "MediFlow-Setup"
 #define AP_PASSWORD "12345678"

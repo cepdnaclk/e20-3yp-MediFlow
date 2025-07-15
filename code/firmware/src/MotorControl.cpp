@@ -18,8 +18,8 @@ void motorSetup() {
 }
 
 void setMotorSpeed(int speed) {
-  analogWrite(RPWM_PIN, speed);
-  analogWrite(LPWM_PIN, 0);
+  analogWrite(RPWM_PIN, 0);
+  analogWrite(LPWM_PIN, speed);
 }
 
 void stopMotor() {
@@ -27,10 +27,10 @@ void stopMotor() {
   analogWrite(LPWM_PIN, 0);
 }
 
-void servoSetup() {
-  gateServo.attach(SERVO_PIN);
-  closeGate();
-}
+// void servoSetup() {
+//   gateServo.attach(SERVO_PIN);
+//   closeGate();
+// }
 
 void openGate() {
   gateServo.write(90); 
