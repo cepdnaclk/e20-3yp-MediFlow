@@ -5,6 +5,21 @@ const authMiddleware = require("../middleware/authMiddleware");
 const checkRole = require('../middleware/checkRole');
 const { getAutoDispenseMedicines, triggerDispensers } = require("../controllers/DispenserController");
 
+const rateLimit = require('express-rate-limit');
+
+
+// Add a rate limiter 
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10000, // limit each IP to 10000 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: "Too many requests, please try again later." }
+});
+
+
+router.use(limiter);
+
 AWS.config.update({
   region: 'us-east-1' // or your region
 });

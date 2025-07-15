@@ -117,12 +117,10 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
       { id: 'pharm_dashboard', label: 'Dashboard', icon: BarChart2, path: '/pharm_dashboard' },
       { id: 'prescriptions', label: 'Prescriptions', icon: ClipboardList, path: '/pharmacist_prescription' },
       { id: 'dispensers', label: 'Dispensers', icon: Package, path: '/dispensers' },
-      { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
     ],
     admin: [
       { id: 'admin_dashboard', label: 'Dashboard', icon: BarChart2, path: '/admin_dashboard' },
       { id: 'user_management', label: 'Users', icon: UsersIcon, path: '/admin/users' },
-      { id: 'roles', label: 'Roles', icon: Shield, path: '/admin/roles' },
     ]
   };
 
@@ -502,6 +500,14 @@ const MediFlowNavbar = ({ userRole = 'pharmacist' }) => {
                             if (item.id === 'records') {
                               navigate('/doctor/patient-records');
                             }
+                            if (item.id === 'admin_dashboard') {
+                              navigate('/admin_dashboard');
+                            }
+                            if (item.id === 'user_management') {
+                              navigate('/admin/users');
+                            }
+                            
+                            
                           }}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}

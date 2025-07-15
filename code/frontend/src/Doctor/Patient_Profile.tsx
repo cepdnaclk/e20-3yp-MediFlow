@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import AIAssistant from '../components/ui/AIAssistant';
+// import AIAssistant from '../components/ui/AIAssistant';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -38,7 +38,6 @@ const PatientProfile: React.FC = () => {
   const [availableMedications, setAvailableMedications] = useState<Medication[]>([]);
   const [isLoadingMedications, setIsLoadingMedications] = useState(false);
   const [diagnosis, setDiagnosis] = useState('');
-  const [prescriptionDate, setPrescriptionDate] = useState('');
   const [patientStatus, setPatientStatus] = useState('');
   const [doctorComments, setDoctorComments] = useState('');
   const [prescriptionHistory, setPrescriptionHistory] = useState([]);
@@ -48,6 +47,14 @@ const PatientProfile: React.FC = () => {
   const patient = location.state?.patient;
   const [isLoadingPatient, setIsLoadingPatient] = useState(true);
   const patientId = patient?.id;
+
+  const [prescriptionDate, setPrescriptionDate] = useState(() => {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+});
 
   // Fetch available medicines from backend
   const fetchMedications = async () => {
@@ -280,15 +287,13 @@ const PatientProfile: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-base text-gray-600">Patient ID: {patient?.id}</span>
-              <button className="text-base bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-all font-semibold">
-                Edit Profile
-              </button>
+
             </div>
           </div>
         </motion.div>
 
         {/* AI Assistant Component */}
-        {patientId && <AIAssistant patientId={patientId} apiUrl={API_URL} />}
+        {/* {patientId && <AIAssistant patientId={patientId} apiUrl={API_URL} />} */}
 
         {/* New Prescription Form Card */}
         <motion.div 
