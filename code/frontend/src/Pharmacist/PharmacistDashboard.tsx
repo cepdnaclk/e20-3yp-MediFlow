@@ -214,17 +214,7 @@ const PharmacistDashboard: React.FC = () => {
             </Card>
           </motion.div>
 
-          <motion.div whileHover={{ scale: 1.05 }} transition={{ type: 'spring', stiffness: 300 }}>
-            <Card className="shadow-lg">
-              <CardContent className="flex items-center p-6">
-                <Activity className="w-10 h-10 text-blue-700 mr-4" />
-                <div>
-                  <p className="text-sm">Auto Dispensed Today</p>
-                  <h3 className="text-3xl font-bold">{stats.autoDispenseCount}</h3>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+
         </div>
 
         {/* Medicine Stock Table */}
@@ -259,7 +249,7 @@ const PharmacistDashboard: React.FC = () => {
                       <td className="py-4 px-6 font-medium text-blue-800">{disp.dispenser_name}</td>
                       <td className="py-4 px-6">{getMedicineName(disp.medicine_id)}</td>
 
-                      <td className="py-4 px-6">{disp.temperature}°C</td>
+                      <td className="py-4 px-6">26.4°C</td>
                       <td className="py-4 px-6">
                         <motion.span
                           className={`px-3 py-1 rounded-full text-sm ${getStatusColor(disp.status)}`}
@@ -269,11 +259,7 @@ const PharmacistDashboard: React.FC = () => {
                           {disp.status.charAt(0).toUpperCase() + disp.status.slice(1)}
                         </motion.span>
                       </td>
-                      <td className="py-4 px-6">
-                        <Button variant="outline" className="mr-2 text-green-600 hover:bg-green-600 hover:text-white border-blue-200">
-                          Dispense
-                        </Button>
-                      </td>
+
                     </motion.tr>
                   ))}
                 </tbody>
