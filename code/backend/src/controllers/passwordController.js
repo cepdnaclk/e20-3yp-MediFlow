@@ -8,7 +8,6 @@ const jwt = require('jsonwebtoken');
 // Reset password after first login
 exports.resetPassword = async (req, res) => {
     try {
-        console.log('Reset password request body:', req.body);
         
         const { token, newPassword } = req.body; // Changed from userId to token
         
@@ -21,7 +20,6 @@ exports.resetPassword = async (req, res) => {
         let decoded;
         try {
             decoded = jwt.verify(token, process.env.JWT_SECRET);
-            console.log('JWT decoded:', decoded);
         } catch (jwtError) {
             console.error('JWT verification error:', jwtError);
             return res.status(401).json({ message: "Invalid or expired token" });
@@ -33,7 +31,6 @@ exports.resetPassword = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
         
-        console.log('User found:', user.email, 'passwordResetRequired:', user.passwordResetRequired);
         
         // Check if password reset is required
         if (!user.passwordResetRequired) {
@@ -49,7 +46,6 @@ exports.resetPassword = async (req, res) => {
             passwordResetRequired: false
         });
         
-        console.log("Password reset successful for user:", user.email);
         
         res.status(200).json({ 
             message: "Password reset successful",
