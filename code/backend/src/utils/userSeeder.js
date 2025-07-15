@@ -6,7 +6,7 @@ const Admin = require('../models/Admin');
 const Doctor = require('../models/Doctor');
 const Pharmacist = require('../models/Pharmacist');
 
-// Base URL for images (adjust based on your environment)
+// Base URL for images
 const BASE_URL = process.env.API_URL;
 
 async function seedDb() {

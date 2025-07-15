@@ -7,7 +7,7 @@ import Login_window from './Login_window';
 import MediFlowNavbar from './MediFlowNavBar.js';
 import RFIDScanPage from './Doctor/Rfid_scan.js';
 import PatientProfile from './Doctor/Patient_Profile.js';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import DoctorDashboardHeader from './Doctor/Doctor_DashboardHeader.js';
 import PharmacistPrescription from './Pharmacist/Pharmacist_prescription.js';
 import PatientRecords from './Doctor/All_patient_records.js';
@@ -17,6 +17,7 @@ import DoctorRegistration from './Admin/DoctorRegistration';
 import PatientRegistration from './Admin/PatientRegistration';
 import PharmacistRegistration from './Admin/PharmacistRegistration';
 import AdminRegistration from './Admin/AdminRegistration';
+import UserManagement from './Admin/UserManagement';
 import ProtectedRoute from './components/ProtectedRoutes';
 
 // Import password reset components
@@ -24,17 +25,53 @@ import ForgotPassword from './components/ForgotPassword';
 import ResetPasswordVerify from './components/ResetPasswordVerify';
 import ResetPassword from './components/PasswordReset';
 
+// Utility function to check if JWT is expired
+const isTokenExpired = (token) => {
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return Date.now() >= payload.exp * 1000;
+  } catch {
+    return true;
+  }
+};
+
 // AppContent component to access useLocation inside Router
 const AppContent = ({ user, setUser }) => {
   const location = useLocation();
-  
+  const navigate = useNavigate();
+
+  // Token expiry check on every navigation
+  useEffect(() => {
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    if (token && isTokenExpired(token)) {
+      sessionStorage.removeItem('token');
+      localStorage.removeItem('token');
+      setUser(null);
+      navigate('/login');
+    }
+  }, [location, setUser, navigate]);
+
+  // List of public routes
+  const publicRoutes = [
+    '/', '/login', '/reset-password', '/forgot-password'
+  ];
+  const isPublicRoute =
+    publicRoutes.includes(location.pathname) ||
+    location.pathname.startsWith('/password-reset/');
+
+  // If user is not logged in and not on a public route, redirect to login
+  if (!user && !isPublicRoute) {
+    return <Navigate to="/login" replace />;
+  }
+
   // Don't show navbar on login pages and reset password pages
   const hideNavbar = location.pathname === '/' || 
                      location.pathname === '/login' || 
                      location.pathname === '/reset-password' ||
                      location.pathname === '/forgot-password' ||
                      location.pathname.startsWith('/password-reset/');
-  
+
   return (
     <>
       {/* Conditionally render the navbar with the user role */}
@@ -119,6 +156,14 @@ const AppContent = ({ user, setUser }) => {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/users" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <UserManagement />
             </ProtectedRoute>
           } 
         />

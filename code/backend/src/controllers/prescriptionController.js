@@ -1,4 +1,5 @@
 const Prescription = require("../models/Prescription");
+const { Op } = require('sequelize');
 
 // Create Prescription
 exports.createPrescription = async (req, res) => {
@@ -97,4 +98,24 @@ exports.updatePrescriptionStatus = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Error updating prescription", error: error.message });
     }
+};
+
+exports.getTodaysPrescriptions = async (req, res) => {
+  try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0,0,0,0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23,59,59,999);
+
+    const prescriptions = await Prescription.findAll({
+      where: {
+        createdAt: {
+          [Op.between]: [startOfDay, endOfDay]
+        }
+      }
+    });
+    res.json({ prescriptions });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching today's prescriptions", error: error.message });
+  }
 };
