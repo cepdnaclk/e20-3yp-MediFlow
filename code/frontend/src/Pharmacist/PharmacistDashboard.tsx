@@ -185,7 +185,6 @@ const DispenserDashboard = () => {
                     <th className="py-3 px-6 text-black-600">Stock Level</th>
                     <th className="py-3 px-6 text-black-600">Temperature</th>
                     <th className="py-3 px-6 text-black-600">Status</th>
-                    <th className="py-3 px-6 text-black-600">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -227,9 +226,6 @@ const DispenserDashboard = () => {
                       <td className="py-4 px-6">
                         <Button variant="outline" className="mr-2 text-green-600 hover:bg-green-600 hover:text-white border-blue-200">
                           Dispense
-                        </Button>
-                        <Button variant="outline" className="text-red-400 hover:bg-red-400 hover:text-white border-blue-200">
-                          Stop
                         </Button>
                       </td>
                     </motion.tr>
