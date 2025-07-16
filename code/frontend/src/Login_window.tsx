@@ -337,7 +337,7 @@ const Login_window = ({ setUser }) => {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-blue-200">
-            Need help? <a href="#" className="font-medium text-green-400 hover:text-green-300">Contact support</a>
+            Need help? <a href="https://cepdnaclk.github.io/e20-3yp-MediFlow/" className="font-medium text-green-400 hover:text-green-300">Contact support</a>
           </p>
         </div>
       </div>
