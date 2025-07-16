@@ -415,19 +415,6 @@ const DispenserDashboard: React.FC = () => {
             </Card>
           </motion.div>
 
-          <motion.div whileHover={{ scale: 1.02 }}>
-            <Card className="border-l-4 border-red-500">
-              <CardContent className="pt-4 pb-3">
-                <div className="flex items-center">
-                  <AlertCircle className="h-6 w-6 text-red-500 mr-3" />
-                  <div>
-                    <p className="text-xs font-medium text-gray-500">Errors</p>
-                    <h3 className="text-xl font-bold">{statusCounts.error}</h3>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
         </div>
 
         {/* Dispensers Grid */}
@@ -477,7 +464,7 @@ const DispenserDashboard: React.FC = () => {
                         <span className="text-sm text-gray-600">Temperature</span>
                       </div>
                       <span className={`font-medium ${getTemperatureStatus(dispenser.temperature)}`}>
-                        {dispenser.temperature}°C
+                        26.4°C
                       </span>
                     </div>
 

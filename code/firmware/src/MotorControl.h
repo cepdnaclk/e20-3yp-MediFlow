@@ -9,7 +9,7 @@
 #define R_EN_PIN 27
 #define L_EN_PIN 14
 
-#define SERVO_PIN 5
+// #define SERVO_PIN 5
 void stopMotor();
 void motorSetup();
 void setMotorSpeed(int speed);

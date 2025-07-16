@@ -361,11 +361,9 @@ const PharmacistPrescription: React.FC = () => {
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-3">
-              <div className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                Pharmacy ID: PH-5721
-              </div>
+
               <div className="h-8 w-8 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md">
-                <span className="text-sm font-bold">RX</span>
+
               </div>
             </div>
           </div>
