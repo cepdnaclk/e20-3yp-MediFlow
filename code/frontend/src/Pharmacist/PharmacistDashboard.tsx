@@ -259,7 +259,6 @@ const PharmacistDashboard: React.FC = () => {
                           {disp.status.charAt(0).toUpperCase() + disp.status.slice(1)}
                         </motion.span>
                       </td>
-
                     </motion.tr>
                   ))}
                 </tbody>
