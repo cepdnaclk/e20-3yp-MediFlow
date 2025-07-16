@@ -269,11 +269,6 @@ const PharmacistDashboard: React.FC = () => {
                           {disp.status.charAt(0).toUpperCase() + disp.status.slice(1)}
                         </motion.span>
                       </td>
-                      <td className="py-4 px-6">
-                        <Button variant="outline" className="mr-2 text-green-600 hover:bg-green-600 hover:text-white border-blue-200">
-                          Dispense
-                        </Button>
-                      </td>
                     </motion.tr>
                   ))}
                 </tbody>
