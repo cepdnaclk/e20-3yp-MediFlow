@@ -75,8 +75,8 @@ async function seedDb() {
       // Create corresponding doctor record
       await Doctor.create({
         userId: doctorUser.id,
-        firstName: 'John',
-        lastName: 'Smith',
+        firstName: 'Akila',
+        lastName: 'Nishan',
         nic: '987654321V',
         phone: '0772345678',
         profileImage: `${BASE_URL}/uploads/profiles/doctor.png`,  // Use your existing image
@@ -112,8 +112,8 @@ async function seedDb() {
       // Create corresponding pharmacist record
       await Pharmacist.create({
         userId: pharmacistUser.id,
-        firstName: 'Jane',
-        lastName: 'Doe',
+        firstName: 'Kushan',
+        lastName: 'Rashmika',
         nic: '456789123V',
         phone: '0773456789',
         profileImage: `${BASE_URL}/uploads/profiles/pharmacist.png`,  // Use your existing image

@@ -11,8 +11,8 @@ async function seedPatients() {
     // Test patients data with RFID UIDs
     const testPatients = [
       {
-        firstName: 'John',
-        lastName: 'Doe',
+        firstName: 'Nimal',
+        lastName: 'Perera',
         dateOfBirth: '1990-05-15',
         phone: '0771234567',
         address: '123 Main Street',
@@ -32,8 +32,8 @@ async function seedPatients() {
         cardStatus: 'active'
       },
       {
-        firstName: 'Sarah',
-        lastName: 'Smith',
+        firstName: 'Ravindu',
+        lastName: 'Lakshan',
         dateOfBirth: '1985-08-22',
         phone: '0761234567',
         address: '456 Park Avenue',
